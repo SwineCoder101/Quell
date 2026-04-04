@@ -1,827 +1,827 @@
 [
   {
     "version": "v3",
-    "pair": "WETH/AAVE",
+    "pair": "USDC/WETH",
+    "token0": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0xA3d1b324ec3B2F78f55923790b2871241763cc9c",
+    "tx": "0xc3b1041b2c9297a419af257ed0d19217542a648ff65bfd441cc2df7e4a933400"
+  },
+  {
+    "version": "v3",
+    "pair": "USDC/DAI",
+    "token0": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "token1": {
+      "address": "0xe918e5266d250c55fdb8ccf8e427bf23bb46b90f",
+      "symbol": "DAI",
+      "decimals": 18
+    },
+    "fee": 500,
+    "tickSpacing": 10,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0xFa637455A9Cb8b55B5aD7835305181fE60f26639",
+    "tx": "0x0df78ece9ed065b22fb8c13285896be2f9790424933ec080d2c29a98534cd714"
+  },
+  {
+    "version": "v3",
+    "pair": "USDC/USDT",
+    "token0": {
+      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
+      "symbol": "USDT",
+      "decimals": 6
+    },
+    "token1": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "fee": 500,
+    "tickSpacing": 10,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0x9b893c24c08d401355304Ebdf7EC2cE54D656D12",
+    "tx": "0x7f0a6b91824db24b69d7ae3fdc4c5adc87c7c603388794ad0601502b8797ba7a"
+  },
+  {
+    "version": "v3",
+    "pair": "USDC/WBTC",
     "token0": {
       "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
+      "symbol": "WBTC",
+      "decimals": 8
+    },
+    "token1": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0xc993FFD1130D246D51343E74d062CC0F77777708",
+    "tx": "0x497ea3535e0662f7464f2d3fcc2dd65dda8659e69c0c58a107c33e2fcda42da9"
+  },
+  {
+    "version": "v3",
+    "pair": "USDC/LINK",
+    "token0": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "token1": {
+      "address": "0xf019feed5b9c23927e562db1b81a38c553041b87",
+      "symbol": "LINK",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0xC382f8FDC631BF4707e40198b8D7cbE57A8b2aB4",
+    "tx": "0x7d4e56f4795faa186aeb677ce74d6cc664a6b8b249beec4134df5cd6d754f6a4"
+  },
+  {
+    "version": "v3",
+    "pair": "WETH/DAI",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
       "symbol": "WETH",
       "decimals": 18
     },
     "token1": {
-      "address": "0xa99e1994f37397a1c174d20acc9147869460ece6",
+      "address": "0xe918e5266d250c55fdb8ccf8e427bf23bb46b90f",
+      "symbol": "DAI",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0x612D8794053838855e1895248Fd86E28b3a0E486",
+    "tx": "0x8491e8249086786e05e1a2758e9214c2d5c8fb0923e4a0f3adfb6d3172c83e72"
+  },
+  {
+    "version": "v3",
+    "pair": "WETH/WBTC",
+    "token0": {
+      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
+      "symbol": "WBTC",
+      "decimals": 8
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0xCb991e8b90e8F4b685bA7D064D1EEd0D1aa80ae6",
+    "tx": "0x30b009d060fb8beac489779c1bb2361ad5b0a996b1ef92f478dadbd65f0bcf29"
+  },
+  {
+    "version": "v3",
+    "pair": "WETH/LINK",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xf019feed5b9c23927e562db1b81a38c553041b87",
+      "symbol": "LINK",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0x545d092bc3970401Ff6Ff53c000FE2460dD8b26c",
+    "tx": "0x37301eee5eb65270e54457dfc312e91bde1ad97387b43815d66f2a58a1796bbf"
+  },
+  {
+    "version": "v3",
+    "pair": "WETH/UNI",
+    "token0": {
+      "address": "0x008607499b9c7dff6c539ff9629450cc5ce8d0a0",
+      "symbol": "UNI",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0x45119773A527c02Bb853319EA7E8B7aa75855CA5",
+    "tx": "0x6cf128e23510acc49d769971806fea8ae7edd73cb062c0c04d0e51211b3b830d"
+  },
+  {
+    "version": "v3",
+    "pair": "WETH/AAVE",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xa1f7e52301dc0201ff935e133ea7cddcee388b38",
       "symbol": "AAVE",
       "decimals": 18
     },
     "fee": 3000,
     "tickSpacing": 60,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0xeA3F65546AFF7189be35270408eaA81E0277C340",
-    "tx": "0x03e95a5d71837b1029585f93b22088493e89b128ef08407de64822eca5c4b1a0"
+    "poolAddress": "0x1889d9B34Fe1e62be24b65D14f523DCBf73db7DF",
+    "tx": "0x6f6128b1d2beaf2b23ac21dc8c9efdda6e4ceed70aed0146d4d6596b057d22b3"
+  },
+  {
+    "version": "v3",
+    "pair": "WETH/ARB",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xc7c55a318c5c05dc5060dc28d01e8237b5057951",
+      "symbol": "ARB",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0xb96D462139129Fa2eAe69D120642df7f2f24b59D",
+    "tx": "0xd4582e01a1d8a99211c42085056f63aa3be5ec458c947d702972da2b8dfc8ac8"
+  },
+  {
+    "version": "v3",
+    "pair": "WETH/OP",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xb90ace2f72be1f5a916c0b9937b70a9ee2849463",
+      "symbol": "OP",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0xf3436F2D047519bF382a5EeEe66B409A5954cE27",
+    "tx": "0xd657356e2ca84025f2e88be359030700b26baf05651ce3bb4b313e39e3cc30cc"
+  },
+  {
+    "version": "v3",
+    "pair": "WETH/MKR",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xb0a82cfe03ec1a6b9c6b821cefc56b6ea8dc73fa",
+      "symbol": "MKR",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0xDbf2cE3Ee6dFe714b642f07b244e41aBE2fc0aF7",
+    "tx": "0x5866e9c6ff438f00c0797e9fba839db4bfc500b0589a452c6b5c9144c8f44397"
+  },
+  {
+    "version": "v3",
+    "pair": "WETH/DOGE",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xb2b9ebf602ef3f737283697921ac25788bdcf56a",
+      "symbol": "DOGE",
+      "decimals": 18
+    },
+    "fee": 10000,
+    "tickSpacing": 200,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0xD687f0113F26b11D6D485C40E5bbA657ec29449E",
+    "tx": "0xdc35fd58aac681519943af9db111b792a3a09f5358de21c9ba2c122ea1f7a2e4"
+  },
+  {
+    "version": "v3",
+    "pair": "USDC/UNI",
+    "token0": {
+      "address": "0x008607499b9c7dff6c539ff9629450cc5ce8d0a0",
+      "symbol": "UNI",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "poolAddress": "0x62A0aDe98e045F78d25267656f797142F6c470f4",
+    "tx": "0x62a2a400f42a6dded72b3cb14117f08bf0aa144fff203a957a6881a479a66d6c"
   },
   {
     "version": "v4",
     "pair": "USDC/WETH",
     "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
       "symbol": "USDC",
       "decimals": 6
     },
     "token1": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
       "symbol": "WETH",
       "decimals": 18
     },
     "fee": 3000,
     "tickSpacing": 60,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x84015af7ceae828f948f5117c8a9e8c21e70d27956abebb8e63ac4dc2b0664fb"
+    "tx": "0x7b2ab29fe7ba09b5a11405625a627a37e7c19d2125ae5f48556902616e3ed211"
   },
   {
     "version": "v4",
     "pair": "USDC/DAI",
     "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
       "symbol": "USDC",
       "decimals": 6
     },
     "token1": {
-      "address": "0xf019feed5b9c23927e562db1b81a38c553041b87",
+      "address": "0xe918e5266d250c55fdb8ccf8e427bf23bb46b90f",
       "symbol": "DAI",
       "decimals": 18
     },
     "fee": 100,
     "tickSpacing": 1,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x33f362dbe3c06c9028ec6c9fb619628f2f49707702bfb5e173c3e859a8a6635c"
+    "tx": "0x8b1a399be30d13392d09710f89008049aeb1eccb8c44b245809b62be9cbf682a"
   },
   {
     "version": "v4",
     "pair": "USDC/USDT",
     "token0": {
-      "address": "0x008607499b9c7dff6c539ff9629450cc5ce8d0a0",
+      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
       "symbol": "USDT",
       "decimals": 6
     },
     "token1": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
       "symbol": "USDC",
       "decimals": 6
     },
     "fee": 100,
     "tickSpacing": 1,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x008fa6daf98efc5dc0e8fabbcfa93de9c95449222e85414043e620233d704fab"
+    "tx": "0x91116d9d61378fcc903ca56f87e032299bf82b7d939bf4df893e70bf316b7eae"
   },
   {
     "version": "v4",
     "pair": "USDC/WBTC",
     "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xa1f7e52301dc0201ff935e133ea7cddcee388b38",
+      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
       "symbol": "WBTC",
       "decimals": 8
+    },
+    "token1": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
     },
     "fee": 3000,
     "tickSpacing": 60,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xffa339f6966e7fd916c9e76d41401f6dd60829f2e486ee20362ff655a17551e3"
+    "tx": "0x20cac785128f82205a8d70b768fd44346793e01ae8bfc6a0626e7336bd78b78d"
   },
   {
     "version": "v4",
     "pair": "USDC/LINK",
     "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
       "symbol": "USDC",
       "decimals": 6
-    },
-    "token1": {
-      "address": "0xc7c55a318c5c05dc5060dc28d01e8237b5057951",
-      "symbol": "LINK",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x2c603dcb530ba082f5ec68e29e1e483be04b3fef506d937771812d98cccded9c"
-  },
-  {
-    "version": "v4",
-    "pair": "USDC/AAVE",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xa99e1994f37397a1c174d20acc9147869460ece6",
-      "symbol": "AAVE",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x4ffb371b06cd58fd5459edaa294899c5d57b619073b5434def2cc414a65a3a50"
-  },
-  {
-    "version": "v4",
-    "pair": "USDC/ARB",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xb0a82cfe03ec1a6b9c6b821cefc56b6ea8dc73fa",
-      "symbol": "ARB",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xcb806d39d9f1a0009df1ee305f7b7ad31721384b71aa7578ea7f0874fbb492ef"
-  },
-  {
-    "version": "v4",
-    "pair": "USDC/OP",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xb687b48ed8b3a367ca23b4f365b3568e2a8da0d9",
-      "symbol": "OP",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x2157f4771599c152182221e820bceb6061454c11572de892b3867e0b47966845"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/DAI",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
     },
     "token1": {
       "address": "0xf019feed5b9c23927e562db1b81a38c553041b87",
-      "symbol": "DAI",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x6dfd444978a9b7cc87041dc514dba51a6422d7c0b77019d4aa8afae170913ce7"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/USDT",
-    "token0": {
-      "address": "0x008607499b9c7dff6c539ff9629450cc5ce8d0a0",
-      "symbol": "USDT",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x5426b80af9bbcb0462088cfb89e599c18c90adf1842305db934798582a9020eb"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/WBTC",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xa1f7e52301dc0201ff935e133ea7cddcee388b38",
-      "symbol": "WBTC",
-      "decimals": 8
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x47937c49e061640d600d0adbd358d15f41bf440fec001a8fc312d5aa42d0fb9f"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/LINK",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xc7c55a318c5c05dc5060dc28d01e8237b5057951",
       "symbol": "LINK",
       "decimals": 18
     },
     "fee": 3000,
     "tickSpacing": 60,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xd56e0e8116888945c626893ba736be16acba96bdbad9754ad771693ad48779cd"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/AAVE",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xa99e1994f37397a1c174d20acc9147869460ece6",
-      "symbol": "AAVE",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xd4b9dd31bc84ecde234c56e2c8c2ae6f726d41f5f54a0a9daef64309224c032e"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/ARB",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xb0a82cfe03ec1a6b9c6b821cefc56b6ea8dc73fa",
-      "symbol": "ARB",
-      "decimals": 18
-    },
-    "fee": 500,
-    "tickSpacing": 10,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x2b5bc3b890a72f584a6966b04a9b0fe013d67ca689581098428f44c654c44a5d"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/OP",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xb687b48ed8b3a367ca23b4f365b3568e2a8da0d9",
-      "symbol": "OP",
-      "decimals": 18
-    },
-    "fee": 500,
-    "tickSpacing": 10,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x28b2e98f4eaf8c8807d622d65968012b2af6e49ea1fc7a6777a325ad1b45793f"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/COMP",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0x9c462dbd59ff0675b31970d11bb3ae93e7283681",
-      "symbol": "COMP",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x1e2049c8e2ee0f3d25882a3d8021d7279728454ed600cbf69fe118bb0cfc355f"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/CRV",
-    "token0": {
-      "address": "0x12e2b23b99429c7738ec3dc4682ddc437a3a3fd5",
-      "symbol": "CRV",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xaf5926a18d45bd8d332ee0739cc36090dd2396fd88004c407eb0e5424d736d1c"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/GRT",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xea79f42fddd4f60b8690df944aacd2545a34f086",
-      "symbol": "GRT",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x85e684cb017de25e34ddbf7bf858f99210593823bae881c4ce12941fc38683b4"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/LDO",
-    "token0": {
-      "address": "0x06d530d52c9949fb13c6a062e9b4941cbc25b60d",
-      "symbol": "LDO",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xa8e59a38eb8c6ca8438f15e3ff76d4d48d30abd71d40f4b1d7deaebf1d805350"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/PEPE",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xb2b9ebf602ef3f737283697921ac25788bdcf56a",
-      "symbol": "PEPE",
-      "decimals": 18
-    },
-    "fee": 10000,
-    "tickSpacing": 200,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x8c6ff8a02d9d4d8659ea061b7560ea201f5e0e443a8853b0273ad962290cc3cc"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/SHIB",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0x8c645f07a0727a28774bc7afd1ea5e1cd8083a1f",
-      "symbol": "SHIB",
-      "decimals": 18
-    },
-    "fee": 10000,
-    "tickSpacing": 200,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x535e0243b6071cd13b989d3948d0ff06728003a2ab1ceefa34ea5e7ffe9cb9e5"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/MATIC",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0x8637576850b339d41cda9559dc6c10992dc7acc5",
-      "symbol": "MATIC",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x24a31cf6724830267f3bab8ba5d5c141027f2220582c14b66a75ad35cbaa02c9"
-  },
-  {
-    "version": "v4",
-    "pair": "WETH/DOGE",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0x7a7d8d490df543f093f296bb76beb56cdbb683cb",
-      "symbol": "DOGE",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xe171de2b87a9e72ce62778d274afe9832e6a6d514c2e55b764825e90f98900fb"
-  },
-  {
-    "version": "v4",
-    "pair": "USDC/COMP",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0x9c462dbd59ff0675b31970d11bb3ae93e7283681",
-      "symbol": "COMP",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xd095680f6ae6b5f68bd1e0a763eeb0d5f1fc0e47a0ebffda1e94aea1d27b2d57"
-  },
-  {
-    "version": "v4",
-    "pair": "USDC/PEPE",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xb2b9ebf602ef3f737283697921ac25788bdcf56a",
-      "symbol": "PEPE",
-      "decimals": 18
-    },
-    "fee": 10000,
-    "tickSpacing": 200,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x8440eb9aceae84602946451fbafa20df4d8a777e1769be256af88bc802b77537"
+    "tx": "0x9e0e6ef3462383f41c18a8202185e71e345039c873f262e2b3d34fa15f8ee122"
   },
   {
     "version": "v4",
     "pair": "USDC/UNI",
     "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
+      "address": "0x008607499b9c7dff6c539ff9629450cc5ce8d0a0",
+      "symbol": "UNI",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x4131a3f8ce70bc60edd0004bb600b471a9432a0a9b6cb7c2c29c4e03b18342dc"
+  },
+  {
+    "version": "v4",
+    "pair": "USDC/AAVE",
+    "token0": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
       "symbol": "USDC",
       "decimals": 6
     },
     "token1": {
-      "address": "0xb90ace2f72be1f5a916c0b9937b70a9ee2849463",
-      "symbol": "UNI",
+      "address": "0xa1f7e52301dc0201ff935e133ea7cddcee388b38",
+      "symbol": "AAVE",
       "decimals": 18
     },
     "fee": 3000,
     "tickSpacing": 60,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xcb1c5503e0f3189274a21f20eb192f59b34581308b733709b5622b5118089e0b"
+    "tx": "0x8fa7ae85b0dbcedcf1074095d32ea4dfff7c13e8be3fd86562a9fdf0618a3be6"
+  },
+  {
+    "version": "v4",
+    "pair": "USDC/ARB",
+    "token0": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "token1": {
+      "address": "0xc7c55a318c5c05dc5060dc28d01e8237b5057951",
+      "symbol": "ARB",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0xbb614c786b51cb5139ee4416813157ec6c09c2a44748597aac6081aea7b8fd9f"
+  },
+  {
+    "version": "v4",
+    "pair": "USDC/OP",
+    "token0": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "token1": {
+      "address": "0xb90ace2f72be1f5a916c0b9937b70a9ee2849463",
+      "symbol": "OP",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x993f6af077f63d6641aaeb3a018af82d2810955bbfb4e068490c060655207e2c"
   },
   {
     "version": "v4",
     "pair": "USDC/SNX",
     "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
       "symbol": "USDC",
       "decimals": 6
     },
     "token1": {
-      "address": "0x89596c433ea951750c9e165d827f77e1b9c225f9",
+      "address": "0xa99e1994f37397a1c174d20acc9147869460ece6",
       "symbol": "SNX",
       "decimals": 18
     },
     "fee": 3000,
     "tickSpacing": 60,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x9acffe6179ff81fa11414168a5e64c5f705a21ceeb1349f1800e500376ced463"
+    "tx": "0xbab616d20e5c013f2b1b535f6ac40e80b39878d6d3d6139808c49b0184570c3a"
   },
   {
     "version": "v4",
-    "pair": "WETH/UNI",
+    "pair": "WETH/DAI",
     "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
       "symbol": "WETH",
       "decimals": 18
     },
     "token1": {
-      "address": "0xb90ace2f72be1f5a916c0b9937b70a9ee2849463",
-      "symbol": "UNI",
+      "address": "0xe918e5266d250c55fdb8ccf8e427bf23bb46b90f",
+      "symbol": "DAI",
       "decimals": 18
     },
     "fee": 3000,
     "tickSpacing": 60,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x4cb40caed7faa1ce9a1145baa6c1a5f4d012b5beb5639e677e76a6d1188dff32"
+    "tx": "0x3c075821e7738aaafee80946ad897289c2f2e21c82c5650d07d834e1bab43483"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/USDT",
+    "token0": {
+      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
+      "symbol": "USDT",
+      "decimals": 6
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x4e5241726be6d7d131a68dd0e0da2b1536bfb516dceb72817cedff444ec8243f"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/WBTC",
+    "token0": {
+      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
+      "symbol": "WBTC",
+      "decimals": 8
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x539ae4d8ca6d11baf94895def0090a09b7b65b55d715e6b914db7c2aa51e05e6"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/LINK",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xf019feed5b9c23927e562db1b81a38c553041b87",
+      "symbol": "LINK",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0xe87627658fa0bfba278de2f760b8890789ae1c03044f9923783f2a295988d62f"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/UNI",
+    "token0": {
+      "address": "0x008607499b9c7dff6c539ff9629450cc5ce8d0a0",
+      "symbol": "UNI",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x22563be07e5b06b1da3069ca5ffac67545f0fd5bb4d67943de0142966ffb099f"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/AAVE",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xa1f7e52301dc0201ff935e133ea7cddcee388b38",
+      "symbol": "AAVE",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0xcefffc2eb4b37931d1c542dfbdc0bdca7248d1ad1110073720ee4b2acc0472e3"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/ARB",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xc7c55a318c5c05dc5060dc28d01e8237b5057951",
+      "symbol": "ARB",
+      "decimals": 18
+    },
+    "fee": 500,
+    "tickSpacing": 10,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0xc62ceb0842735cd9b3a1efbed5276a8c74a256f1081a9b9878e44a12ea606675"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/OP",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xb90ace2f72be1f5a916c0b9937b70a9ee2849463",
+      "symbol": "OP",
+      "decimals": 18
+    },
+    "fee": 500,
+    "tickSpacing": 10,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0xbb6fd3bff2feca34cacf299ec6bbe54b8ad9cc7abe682fd926b2e9948cd1e95b"
   },
   {
     "version": "v4",
     "pair": "WETH/MKR",
     "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xe7e7fb85a33ce518c39df92ab6a7cebe55cd0b6c",
-      "symbol": "MKR",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0x28a36fd481019fb725c65b00c7ecab4b21d3a647cb8c3e690dffd1653e2bb662"
-  },
-  {
-    "version": "v4",
-    "pair": "USDC/MKR",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xe7e7fb85a33ce518c39df92ab6a7cebe55cd0b6c",
-      "symbol": "MKR",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "tx": "0xf7ae946edd8ffd9ebf43a79901d1d8b8e740ef7a2134c9d6e7a6c1eab9f928da"
-  },
-  {
-    "version": "v3",
-    "pair": "USDC/WETH",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0x495268bdca3Dc7D6B02B946C23d28ebc0242CabF",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "USDC/DAI",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xf019feed5b9c23927e562db1b81a38c553041b87",
-      "symbol": "DAI",
-      "decimals": 18
-    },
-    "fee": 500,
-    "tickSpacing": 10,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0x3A96113e13c66e6C63457c6A3E5A486FfC27822b",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "USDC/USDT",
-    "token0": {
-      "address": "0x008607499b9c7dff6c539ff9629450cc5ce8d0a0",
-      "symbol": "USDT",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "fee": 500,
-    "tickSpacing": 10,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0xFA0c884EA4D5A6D420F544385aB33019231CcEb7",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "USDC/WBTC",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xa1f7e52301dc0201ff935e133ea7cddcee388b38",
-      "symbol": "WBTC",
-      "decimals": 8
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0xc9C094b7bE032730C28B5CA52c19C5bb4fAE4d7D",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "USDC/LINK",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xc7c55a318c5c05dc5060dc28d01e8237b5057951",
-      "symbol": "LINK",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0x57FF793bF738d88432Eb0D7D72Fa4caE7891C881",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "WETH/DAI",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xf019feed5b9c23927e562db1b81a38c553041b87",
-      "symbol": "DAI",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0x5C58fD91E739363a21048bF0c1635418A6DcfA3E",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "WETH/WBTC",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xa1f7e52301dc0201ff935e133ea7cddcee388b38",
-      "symbol": "WBTC",
-      "decimals": 8
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0x795BCCaf219f08403A2ec03121dD141FB4201A6D",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "WETH/LINK",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xc7c55a318c5c05dc5060dc28d01e8237b5057951",
-      "symbol": "LINK",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0x0050758FBdA20ef175589Bd0F1929BD6E3922123",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "WETH/UNI",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xb90ace2f72be1f5a916c0b9937b70a9ee2849463",
-      "symbol": "UNI",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0x14d29eE752D2dFd0252BD7293d74C94F136bB898",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "WETH/ARB",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
       "symbol": "WETH",
       "decimals": 18
     },
     "token1": {
       "address": "0xb0a82cfe03ec1a6b9c6b821cefc56b6ea8dc73fa",
-      "symbol": "ARB",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0xa61A1f52625039E7f4481F7d4eb4864FF7A57195",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "WETH/OP",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xb687b48ed8b3a367ca23b4f365b3568e2a8da0d9",
-      "symbol": "OP",
-      "decimals": 18
-    },
-    "fee": 3000,
-    "tickSpacing": 60,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0x33349eE070861C13BbD01249AF5210B63754F057",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "WETH/MKR",
-    "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    "token1": {
-      "address": "0xe7e7fb85a33ce518c39df92ab6a7cebe55cd0b6c",
       "symbol": "MKR",
       "decimals": 18
     },
     "fee": 3000,
     "tickSpacing": 60,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0x6203fa5AE2f88b6386716912D0b597d72d90f787",
-    "tx": ""
+    "tx": "0xd7767fb57c2941957a08b6730dc52b81a96c31840ddcf7026202ff82c678a9b9"
   },
   {
-    "version": "v3",
-    "pair": "WETH/DOGE",
+    "version": "v4",
+    "pair": "WETH/COMP",
     "token0": {
-      "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
       "symbol": "WETH",
       "decimals": 18
     },
     "token1": {
-      "address": "0x7a7d8d490df543f093f296bb76beb56cdbb683cb",
-      "symbol": "DOGE",
-      "decimals": 18
-    },
-    "fee": 10000,
-    "tickSpacing": 200,
-    "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0xaf61854971Ec7f76020f7E97a6729cF6269137F2",
-    "tx": ""
-  },
-  {
-    "version": "v3",
-    "pair": "USDC/UNI",
-    "token0": {
-      "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    "token1": {
-      "address": "0xb90ace2f72be1f5a916c0b9937b70a9ee2849463",
-      "symbol": "UNI",
+      "address": "0xb687b48ed8b3a367ca23b4f365b3568e2a8da0d9",
+      "symbol": "COMP",
       "decimals": 18
     },
     "fee": 3000,
     "tickSpacing": 60,
     "hooks": "0x0000000000000000000000000000000000000000",
-    "poolAddress": "0xEc5a6bf0D7f8422Bd804822E404E0Cff69F0619B",
-    "tx": ""
+    "tx": "0x0e99eca753922928e4210611341a49f6b65a85dd69611dc58ad2783efb431188"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/CRV",
+    "token0": {
+      "address": "0x89596c433ea951750c9e165d827f77e1b9c225f9",
+      "symbol": "CRV",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x6988370fc3d70a6bcd3f125e566704f915f50f033a04905fe08db37edc0ab98a"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/GRT",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xe7e7fb85a33ce518c39df92ab6a7cebe55cd0b6c",
+      "symbol": "GRT",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x01ef448d48ba2cb3ab47660f5a9c8eac591b78b63243e41b66ee95742786e910"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/LDO",
+    "token0": {
+      "address": "0x9c462dbd59ff0675b31970d11bb3ae93e7283681",
+      "symbol": "LDO",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0xfc77dc2c587bf6ec20dbf9b883d79f0c207d758bea00b0649366b551663b23a4"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/PEPE",
+    "token0": {
+      "address": "0x12e2b23b99429c7738ec3dc4682ddc437a3a3fd5",
+      "symbol": "PEPE",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 10000,
+    "tickSpacing": 200,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x9bccf3f582afdf4786e5b98970a9e13d143719e87cd69e722d495b5f3c4aad2c"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/SHIB",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xea79f42fddd4f60b8690df944aacd2545a34f086",
+      "symbol": "SHIB",
+      "decimals": 18
+    },
+    "fee": 10000,
+    "tickSpacing": 200,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0xa606e5fd8a971dbde68b696fca343daa8c482e4fde9e208767304766db3ef36a"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/MATIC",
+    "token0": {
+      "address": "0x06d530d52c9949fb13c6a062e9b4941cbc25b60d",
+      "symbol": "MATIC",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x960fefc57abf618851d967cb53fab4c5399db33065648dc296a1f21ba0a1a986"
+  },
+  {
+    "version": "v4",
+    "pair": "WETH/DOGE",
+    "token0": {
+      "address": "0xa1811a3d805b4e71e6787936480cb226681da5ae",
+      "symbol": "WETH",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0xb2b9ebf602ef3f737283697921ac25788bdcf56a",
+      "symbol": "DOGE",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0xfc0b651ebb64a1bccd53b5bd1a8c89acc98ce9b192e5b3048f3426e44e6006d8"
+  },
+  {
+    "version": "v4",
+    "pair": "USDC/MKR",
+    "token0": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "token1": {
+      "address": "0xb0a82cfe03ec1a6b9c6b821cefc56b6ea8dc73fa",
+      "symbol": "MKR",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0xd120fd328e9bcbbd8be4e57f176b98f58a300d41fbd59e84f9966c81112574a5"
+  },
+  {
+    "version": "v4",
+    "pair": "USDC/COMP",
+    "token0": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "token1": {
+      "address": "0xb687b48ed8b3a367ca23b4f365b3568e2a8da0d9",
+      "symbol": "COMP",
+      "decimals": 18
+    },
+    "fee": 3000,
+    "tickSpacing": 60,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x20d1b49b1d1ffad39d89ae4299a214dbda519ca9ea9bff391ae53904d4c21d6a"
+  },
+  {
+    "version": "v4",
+    "pair": "USDC/PEPE",
+    "token0": {
+      "address": "0x12e2b23b99429c7738ec3dc4682ddc437a3a3fd5",
+      "symbol": "PEPE",
+      "decimals": 18
+    },
+    "token1": {
+      "address": "0x46ea40b1190ef2c06e7660b0fa07f28a76658336",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    "fee": 10000,
+    "tickSpacing": 200,
+    "hooks": "0x0000000000000000000000000000000000000000",
+    "tx": "0x734364de0bff4a7201ca21b4bad101d4e4c08b1c94ea178f776d9e5a4f509449"
   }
 ]

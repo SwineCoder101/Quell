@@ -33,7 +33,7 @@ export default function Home() {
         <h1 className="text-xl font-bold tracking-tight">Quell</h1>
         <div className="flex items-center gap-3">
           <span className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded-full">
-            Base Sepolia
+            Sepolia
           </span>
           <ConnectButton />
         </div>
@@ -66,7 +66,7 @@ export default function Home() {
             {activeTab === "batch" && <BatchSwapPanel />}
           </div>
           <p className="text-center text-xs text-zinc-600 mt-4">
-            Powered by Uniswap V3 + V4 on Base Sepolia
+            Powered by Uniswap V3 + V4 on Sepolia
           </p>
         </div>
       </main>

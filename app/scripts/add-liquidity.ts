@@ -8,15 +8,15 @@ import {
   zeroAddress,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { sepolia } from "viem/chains";
 import * as fs from "fs";
 import * as path from "path";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 // ── Addresses ──
-const V3_POSITION_MANAGER = "0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2";
-const V4_POOL_MODIFY_TEST = "0x37429cd17cb1454c34e7f50b09725202fd533039"; // testnet helper
+const V3_POSITION_MANAGER = "0x1238536071E1c677A632429e3655c799b22cDA52";
+const V4_POOL_MODIFY_TEST = "0x0c478023803a644c94c4ce1c1e7b9a087e411b0a"; // Sepolia testnet helper
 const PERMIT2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
 // ── ABIs ──
@@ -172,9 +172,9 @@ async function main() {
   const pools: PoolInfo[] = JSON.parse(fs.readFileSync(poolsFile, "utf8"));
 
   const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const transport = http("https://sepolia.base.org", { retryCount: 5, retryDelay: 3000 });
-  const walletClient = createWalletClient({ account, chain: baseSepolia, transport });
-  const publicClient = createPublicClient({ chain: baseSepolia, transport });
+  const transport = http("https://ethereum-sepolia-rpc.publicnode.com", { retryCount: 5, retryDelay: 3000 });
+  const walletClient = createWalletClient({ account, chain: sepolia, transport });
+  const publicClient = createPublicClient({ chain: sepolia, transport });
 
   let nonce = await publicClient.getTransactionCount({ address: account.address });
   console.log(`Deployer: ${account.address} (nonce: ${nonce})\n`);

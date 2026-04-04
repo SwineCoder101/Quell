@@ -1,6 +1,6 @@
 import { createPublicClient, createWalletClient, http, parseUnits } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { sepolia } from "viem/chains";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -64,14 +64,14 @@ async function main() {
   }
 
   const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const transport = http("https://sepolia.base.org", {
+  const transport = http("https://ethereum-sepolia-rpc.publicnode.com", {
     batch: false,
     retryCount: 3,
     retryDelay: 2000,
   });
 
-  const walletClient = createWalletClient({ account, chain: baseSepolia, transport });
-  const publicClient = createPublicClient({ chain: baseSepolia, transport });
+  const walletClient = createWalletClient({ account, chain: sepolia, transport });
+  const publicClient = createPublicClient({ chain: sepolia, transport });
 
   console.log(`Deployer: ${account.address}`);
   const balance = await publicClient.getBalance({ address: account.address });

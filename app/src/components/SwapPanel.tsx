@@ -3,11 +3,11 @@
 import { useState, useCallback } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { TOKEN_LIST, NATIVE_ETH, type TokenConfig } from "@/lib/token-config";
+import { TOKEN_LIST, NATIVE_ETH, isPairQuotable, isTokenQuotable, getQuotableCounterparts, type TokenConfig } from "@/lib/token-config";
 import { checkApproval, getQuote, getSwap, getOutputAmount } from "@/lib/uniswap-api";
 import TokenIcon from "@/components/TokenIcon";
 
-const BASE_SEPOLIA_CHAIN_ID = "84532";
+const SEPOLIA_CHAIN_ID = "11155111";
 
 interface TokenOption extends TokenConfig {
   isNative?: boolean;
@@ -15,7 +15,7 @@ interface TokenOption extends TokenConfig {
 
 const TOKEN_OPTIONS: TokenOption[] = [
   { ...NATIVE_ETH, isNative: true },
-  ...TOKEN_LIST,
+  ...TOKEN_LIST.filter((t) => isTokenQuotable(t.symbol)),
 ];
 
 type Step = "idle" | "quoting" | "quoted" | "approving" | "signing" | "swapping" | "done" | "error";
@@ -56,8 +56,8 @@ export default function SwapPanel() {
         swapper: address,
         tokenIn: tokenIn.address,
         tokenOut: tokenOut.address,
-        tokenInChainId: BASE_SEPOLIA_CHAIN_ID,
-        tokenOutChainId: BASE_SEPOLIA_CHAIN_ID,
+        tokenInChainId: SEPOLIA_CHAIN_ID,
+        tokenOutChainId: SEPOLIA_CHAIN_ID,
         amount: rawAmount,
         type: "EXACT_INPUT",
         slippageTolerance: 0.5,
@@ -84,7 +84,7 @@ export default function SwapPanel() {
           walletAddress: address,
           token: tokenIn.address,
           amount: parseUnits(amountIn, tokenIn.decimals).toString(),
-          chainId: 84532,
+          chainId: 11155111,
         });
 
         if (approvalRes.approval) {
@@ -160,6 +160,7 @@ export default function SwapPanel() {
             tokens={TOKEN_OPTIONS}
             selected={tokenIn}
             exclude={tokenOut.symbol}
+            filterFor={tokenOut.symbol}
             onChange={(t) => { setTokenIn(t); resetState(); }}
           />
         </div>
@@ -195,6 +196,7 @@ export default function SwapPanel() {
             tokens={TOKEN_OPTIONS}
             selected={tokenOut}
             exclude={tokenIn.symbol}
+            filterFor={tokenIn.symbol}
             onChange={(t) => { setTokenOut(t); resetState(); }}
           />
         </div>
@@ -233,14 +235,25 @@ export default function SwapPanel() {
         </div>
       )}
 
+      {/* Pair quotability warning */}
+      {!isPairQuotable(tokenIn.symbol, tokenOut.symbol) && (
+        <div className="bg-amber-900/20 border border-amber-800/50 rounded-xl p-3 flex items-start gap-2">
+          <span className="text-amber-400 text-sm mt-0.5">!</span>
+          <div>
+            <p className="text-amber-400 text-sm font-medium">RFQ unavailable for {tokenIn.symbol}/{tokenOut.symbol}</p>
+            <p className="text-amber-400/60 text-xs mt-0.5">This pair only has V4 liquidity. The Uniswap Trading API does not yet support V4 pool routing.</p>
+          </div>
+        </div>
+      )}
+
       {/* Action button */}
       {step === "idle" || step === "error" ? (
         <button
           onClick={handleQuote}
-          disabled={!amountIn || parseFloat(amountIn) <= 0}
+          disabled={!amountIn || parseFloat(amountIn) <= 0 || !isPairQuotable(tokenIn.symbol, tokenOut.symbol)}
           className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-semibold py-4 rounded-xl transition text-lg"
         >
-          Get Quote
+          Request Quote (RFQ)
         </button>
       ) : step === "quoted" ? (
         <button
@@ -254,12 +267,12 @@ export default function SwapPanel() {
           <div className="text-green-400 font-semibold">Swap successful!</div>
           {txHash && (
             <a
-              href={`https://sepolia.basescan.org/tx/${txHash}`}
+              href={`https://sepolia.etherscan.io/tx/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-violet-400 hover:underline text-sm"
             >
-              View on BaseScan
+              View on Etherscan
             </a>
           )}
           <button
@@ -271,7 +284,7 @@ export default function SwapPanel() {
         </div>
       ) : (
         <button disabled className="w-full bg-zinc-700 text-zinc-400 font-semibold py-4 rounded-xl text-lg">
-          {step === "quoting" && "Getting quote..."}
+          {step === "quoting" && "Requesting quote..."}
           {step === "approving" && "Approving token..."}
           {step === "signing" && "Sign permit in wallet..."}
           {step === "swapping" && "Confirm swap in wallet..."}
@@ -292,17 +305,21 @@ function TokenSelector({
   tokens,
   selected,
   exclude,
+  filterFor,
   onChange,
 }: {
   tokens: TokenOption[];
   selected: TokenOption;
   exclude: string;
+  filterFor?: string;
   onChange: (t: TokenOption) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const counterparts = filterFor ? getQuotableCounterparts(filterFor) : null;
   const filtered = tokens
     .filter((t) => t.symbol !== exclude)
+    .filter((t) => !counterparts || counterparts.includes(t.symbol))
     .filter(
       (t) =>
         t.symbol.toLowerCase().includes(search.toLowerCase()) ||
@@ -338,23 +355,39 @@ function TokenSelector({
             </div>
             <div className="max-h-60 overflow-y-auto">
               {filtered.map((t) => (
-                <button
+                <div
                   key={t.symbol}
-                  onClick={() => {
-                    onChange(t);
-                    setOpen(false);
-                    setSearch("");
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-700 transition text-left ${
+                  className={`flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-700 transition ${
                     t.symbol === selected.symbol ? "bg-zinc-700/50" : ""
                   }`}
                 >
-                  <TokenIcon symbol={t.symbol} size="md" />
-                  <div>
-                    <p className="text-sm font-medium text-white">{t.symbol}</p>
-                    <p className="text-xs text-zinc-500">{t.name}</p>
-                  </div>
-                </button>
+                  <button
+                    onClick={() => {
+                      onChange(t);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                    className="flex items-center gap-3 flex-1 text-left"
+                  >
+                    <TokenIcon symbol={t.symbol} size="md" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-white">{t.symbol}</p>
+                      <p className="text-xs text-zinc-500 truncate">{t.name}</p>
+                    </div>
+                  </button>
+                  {t.address !== "0x0000000000000000000000000000000000000000" && (
+                    <a
+                      href={`https://sepolia.etherscan.io/token/${t.address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-[10px] text-zinc-600 hover:text-violet-400 transition shrink-0"
+                      title="View on BaseScan"
+                    >
+                      ↗
+                    </a>
+                  )}
+                </div>
               ))}
               {filtered.length === 0 && (
                 <p className="text-center text-zinc-500 text-sm py-4">No tokens found</p>

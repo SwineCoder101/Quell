@@ -1,21 +1,21 @@
 import { createPublicClient, createWalletClient, http, parseAbi, zeroAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { sepolia } from "viem/chains";
 import * as fs from "fs";
 import * as path from "path";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
-// V4
-const POOL_MANAGER = "0x05E73354cFDd6745C338b50BcFDfA3Aa6fA03408";
-const POSITION_MANAGER = "0x4b2c77d209d3405f41a037ec6c77f7f5b8e2ca80";
+// V4 (Sepolia)
+const POOL_MANAGER = "0xE03A1074c86CFeDd5C142C4F04F1a1536e203543";
+const POSITION_MANAGER = "0x429ba70129df741B2Ca2a85BC3A2a3328e5c09b4";
 const PERMIT2 = "0x000000000022D473030F116dDEE9F6B43aC78BA3";
 
-// V3
-const V3_FACTORY = "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24";
-const V3_POSITION_MANAGER = "0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2";
-const V3_SWAP_ROUTER = "0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4";
-const V3_QUOTER = "0xC5290058841028F1614F3A6F0F5816cAd0df5E27";
+// V3 (Sepolia)
+const V3_FACTORY = "0x0227628f3F023bb0B980b67D528571c95c6DaC1c";
+const V3_POSITION_MANAGER = "0x1238536071E1c677A632429e3655c799b22cDA52";
+const V3_SWAP_ROUTER = "0x3bFA4769FB09eefC5a80d6E87c3B9C650f7Ae48E";
+const V3_QUOTER = "0xEd1f6473345F45b75F8179591dd5bA1888cf2FB3";
 
 const V4_POOL_MANAGER_ABI = parseAbi([
   "function initialize((address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) key, uint160 sqrtPriceX96) external returns (int24 tick)",
@@ -158,9 +158,9 @@ async function main() {
 
   const tokens: Record<string, TokenInfo> = JSON.parse(fs.readFileSync(tokensPath, "utf8"));
   const account = privateKeyToAccount(privateKey as `0x${string}`);
-  const transport = http("https://sepolia.base.org", { retryCount: 5, retryDelay: 3000 });
-  const walletClient = createWalletClient({ account, chain: baseSepolia, transport });
-  const publicClient = createPublicClient({ chain: baseSepolia, transport });
+  const transport = http("https://ethereum-sepolia-rpc.publicnode.com", { retryCount: 5, retryDelay: 3000 });
+  const walletClient = createWalletClient({ account, chain: sepolia, transport });
+  const publicClient = createPublicClient({ chain: sepolia, transport });
 
   // Track nonce explicitly to avoid desync with flaky RPC
   let nonce = await publicClient.getTransactionCount({ address: account.address });

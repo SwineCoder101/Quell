@@ -7,13 +7,13 @@ import {
   zeroAddress,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { sepolia } from "viem/chains";
 import * as fs from "fs";
 import * as path from "path";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
-const V4_POOL_MODIFY_TEST = "0x37429cd17cb1454c34e7f50b09725202fd533039";
+const V4_POOL_MODIFY_TEST = "0x0c478023803a644c94c4ce1c1e7b9a087e411b0a";
 
 const ERC20_ABI = parseAbi([
   "function transfer(address to, uint256 amount) external returns (bool)",
@@ -51,8 +51,8 @@ async function main() {
 
   const account = privateKeyToAccount(privateKey as `0x${string}`);
   const transport = http("https://sepolia.base.org", { retryCount: 5, retryDelay: 3000 });
-  const walletClient = createWalletClient({ account, chain: baseSepolia, transport });
-  const publicClient = createPublicClient({ chain: baseSepolia, transport });
+  const walletClient = createWalletClient({ account, chain: sepolia, transport });
+  const publicClient = createPublicClient({ chain: sepolia, transport });
 
   let nonce = await publicClient.getTransactionCount({ address: account.address });
   console.log(`Deployer: ${account.address} (nonce: ${nonce})\n`);
@@ -71,29 +71,19 @@ async function main() {
   // Actually, let's just check which V4 pools have zero liquidity by checking token balances
   // Simpler: re-attempt all failed V4 pools by pre-funding the test contract
 
-  // First, send a generous amount of each token to the PoolModifyLiquidityTest contract
-  const tokensToFund: Record<string, { address: string; decimals: number; amount: string }> = {
-    USDC: { address: "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9", decimals: 6, amount: "500000" },
-    USDT: { address: "0x008607499b9c7dff6c539ff9629450cc5ce8d0a0", decimals: 6, amount: "500000" },
-    WBTC: { address: "0xa1f7e52301dc0201ff935e133ea7cddcee388b38", decimals: 8, amount: "10" },
-    WETH: { address: "0x2d3f715022a81c39b102fafe5d3d119561e6e38f", decimals: 18, amount: "50" },
-    DAI:  { address: "0xf019feed5b9c23927e562db1b81a38c553041b87", decimals: 18, amount: "500000" },
-    LINK: { address: "0xc7c55a318c5c05dc5060dc28d01e8237b5057951", decimals: 18, amount: "50000" },
-    UNI:  { address: "0xb90ace2f72be1f5a916c0b9937b70a9ee2849463", decimals: 18, amount: "50000" },
-    AAVE: { address: "0xa99e1994f37397a1c174d20acc9147869460ece6", decimals: 18, amount: "5000" },
-    ARB:  { address: "0xb0a82cfe03ec1a6b9c6b821cefc56b6ea8dc73fa", decimals: 18, amount: "500000" },
-    OP:   { address: "0xb687b48ed8b3a367ca23b4f365b3568e2a8da0d9", decimals: 18, amount: "500000" },
-    SNX:  { address: "0x89596c433ea951750c9e165d827f77e1b9c225f9", decimals: 18, amount: "50000" },
-    MKR:  { address: "0xe7e7fb85a33ce518c39df92ab6a7cebe55cd0b6c", decimals: 18, amount: "500" },
-    COMP: { address: "0x9c462dbd59ff0675b31970d11bb3ae93e7283681", decimals: 18, amount: "5000" },
-    CRV:  { address: "0x12e2b23b99429c7738ec3dc4682ddc437a3a3fd5", decimals: 18, amount: "500000" },
-    GRT:  { address: "0xea79f42fddd4f60b8690df944aacd2545a34f086", decimals: 18, amount: "500000" },
-    LDO:  { address: "0x06d530d52c9949fb13c6a062e9b4941cbc25b60d", decimals: 18, amount: "500000" },
-    PEPE: { address: "0xb2b9ebf602ef3f737283697921ac25788bdcf56a", decimals: 18, amount: "500000000" },
-    SHIB: { address: "0x8c645f07a0727a28774bc7afd1ea5e1cd8083a1f", decimals: 18, amount: "500000000" },
-    MATIC:{ address: "0x8637576850b339d41cda9559dc6c10992dc7acc5", decimals: 18, amount: "500000" },
-    DOGE: { address: "0x7a7d8d490df543f093f296bb76beb56cdbb683cb", decimals: 18, amount: "5000000" },
+  // Read token addresses from artifact and fund the test contract
+  const tokensArtifact = path.join(__dirname, "..", "artifacts", "deployed-tokens.json");
+  const allTokens: Record<string, { address: string; decimals: number }> = JSON.parse(fs.readFileSync(tokensArtifact, "utf8"));
+  const fundAmounts: Record<string, string> = {
+    USDC: "500000", USDT: "500000", WBTC: "10", WETH: "50", DAI: "500000",
+    LINK: "50000", UNI: "50000", AAVE: "5000", ARB: "500000", OP: "500000",
+    SNX: "50000", MKR: "500", COMP: "5000", CRV: "500000", GRT: "500000",
+    LDO: "500000", PEPE: "500000000", SHIB: "500000000", MATIC: "500000", DOGE: "5000000",
   };
+  const tokensToFund: Record<string, { address: string; decimals: number; amount: string }> = {};
+  for (const [sym, info] of Object.entries(allTokens)) {
+    tokensToFund[sym] = { address: info.address, decimals: info.decimals, amount: fundAmounts[sym] || "100000" };
+  }
 
   console.log("=== Funding PoolModifyLiquidityTest contract ===\n");
 

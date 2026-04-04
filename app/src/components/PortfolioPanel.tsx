@@ -164,7 +164,18 @@ function TokenRow({ token, dimmed }: { token: TokenBalance; dimmed?: boolean }) 
       <div className="flex items-center gap-3">
         <TokenIcon symbol={token.symbol} size="lg" />
         <div>
-          <p className="text-sm font-semibold text-white">{token.symbol}</p>
+          {token.address !== "native" ? (
+            <a
+              href={`https://sepolia.etherscan.io/token/${token.address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-semibold text-white hover:text-violet-400 transition"
+            >
+              {token.symbol} ↗
+            </a>
+          ) : (
+            <p className="text-sm font-semibold text-white">{token.symbol}</p>
+          )}
           <p className="text-xs text-zinc-500">{token.name}</p>
         </div>
       </div>
@@ -172,12 +183,12 @@ function TokenRow({ token, dimmed }: { token: TokenBalance; dimmed?: boolean }) 
         <p className="text-sm font-mono text-white">{displayBalance}</p>
         {token.address !== "native" && (
           <a
-            href={`https://sepolia.basescan.org/token/${token.address}`}
+            href={`https://sepolia.etherscan.io/token/${token.address}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] text-zinc-600 hover:text-zinc-400 transition"
+            className="text-[10px] text-zinc-600 hover:text-violet-400 transition"
           >
-            {(token.address as string).slice(0, 6)}...{(token.address as string).slice(-4)}
+            {(token.address as string).slice(0, 6)}...{(token.address as string).slice(-4)} ↗
           </a>
         )}
       </div>

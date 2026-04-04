@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { useSendCalls } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { TOKEN_LIST, NATIVE_ETH as NATIVE_ETH_CONFIG, type TokenConfig } from "@/lib/token-config";
+import { TOKEN_LIST, NATIVE_ETH as NATIVE_ETH_CONFIG, isPairQuotable, isTokenQuotable, getQuotableCounterparts, type TokenConfig } from "@/lib/token-config";
 import {
   getQuote,
   getBatchSwap,
@@ -13,7 +13,7 @@ import {
 } from "@/lib/uniswap-api";
 import TokenIcon from "@/components/TokenIcon";
 
-const BASE_SEPOLIA_CHAIN_ID = "84532";
+const SEPOLIA_CHAIN_ID = "11155111";
 
 interface TokenOption extends TokenConfig {
   isNative?: boolean;
@@ -125,8 +125,8 @@ export default function BatchSwapPanel() {
             swapper: address,
             tokenIn: trade.sellToken.address,
             tokenOut: trade.buyToken.address,
-            tokenInChainId: BASE_SEPOLIA_CHAIN_ID,
-            tokenOutChainId: BASE_SEPOLIA_CHAIN_ID,
+            tokenInChainId: SEPOLIA_CHAIN_ID,
+            tokenOutChainId: SEPOLIA_CHAIN_ID,
             amount: rawAmount,
             type: "EXACT_INPUT",
             slippageTolerance: 0.5,
@@ -269,7 +269,7 @@ export default function BatchSwapPanel() {
               }}
               disabled={batchStep === "executing"}
             >
-              {TOKEN_OPTIONS.filter((o) => o.symbol !== trade.buyToken.symbol).map(
+              {TOKEN_OPTIONS.filter((o) => o.symbol !== trade.buyToken.symbol && isTokenQuotable(o.symbol)).map(
                 (o) => (
                   <option key={o.symbol} value={o.symbol}>
                     {o.symbol}
@@ -309,7 +309,10 @@ export default function BatchSwapPanel() {
               }}
               disabled={batchStep === "executing"}
             >
-              {TOKEN_OPTIONS.filter((o) => o.symbol !== trade.sellToken.symbol).map(
+              {TOKEN_OPTIONS.filter((o) => {
+                const counterparts = getQuotableCounterparts(trade.sellToken.symbol);
+                return o.symbol !== trade.sellToken.symbol && counterparts.includes(o.symbol);
+              }).map(
                 (o) => (
                   <option key={o.symbol} value={o.symbol}>
                     {o.symbol}
@@ -321,7 +324,11 @@ export default function BatchSwapPanel() {
 
           {/* Output */}
           <div className="text-sm text-white px-2 truncate">
-            {trade.status === "quoting" ? (
+            {!isPairQuotable(trade.sellToken.symbol, trade.buyToken.symbol) ? (
+              <span className="text-amber-400 text-xs" title="This pair only has V4 liquidity — RFQ unavailable">
+                No RFQ
+              </span>
+            ) : trade.status === "quoting" ? (
               <span className="text-zinc-500 animate-pulse">quoting...</span>
             ) : trade.outputAmount ? (
               <span className="text-green-400">
@@ -357,29 +364,60 @@ export default function BatchSwapPanel() {
         + Add Trade
       </button>
 
+      {/* PnL Summary */}
+      <BatchPnL trades={trades} />
+
       {/* Action buttons */}
-      {batchStep === "idle" || batchStep === "error" ? (
-        <button
-          onClick={handleQuoteAll}
-          disabled={!trades.some((t) => t.sellAmount && parseFloat(t.sellAmount) > 0)}
-          className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-semibold py-4 rounded-xl transition text-lg"
-        >
-          Get Quotes
-        </button>
-      ) : batchStep === "quoted" ? (
-        <button
-          onClick={handleExecuteBatch}
-          className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-4 rounded-xl transition text-lg"
-        >
-          Execute Batch ({trades.filter((t) => t.status === "quoted").length}{" "}
-          {trades.filter((t) => t.status === "quoted").length === 1
-            ? "swap"
-            : "swaps"}
-          )
-        </button>
-      ) : batchStep === "done" ? (
-        <div className="text-center space-y-2">
-          <div className="text-green-400 font-semibold">
+      <div className="flex gap-2">
+        {batchStep === "idle" || batchStep === "error" ? (
+          <button
+            onClick={handleQuoteAll}
+            disabled={!trades.some((t) => t.sellAmount && parseFloat(t.sellAmount) > 0 && isPairQuotable(t.sellToken.symbol, t.buyToken.symbol))}
+            className="flex-1 bg-zinc-700 hover:bg-zinc-600 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-semibold py-4 rounded-xl transition text-lg"
+          >
+            Request Quotes (RFQ)
+          </button>
+        ) : batchStep === "quoting" ? (
+          <button
+            disabled
+            className="flex-1 bg-zinc-700 text-zinc-400 font-semibold py-4 rounded-xl text-lg"
+          >
+            Requesting quotes...
+          </button>
+        ) : null}
+
+        {batchStep === "quoted" ? (
+          <>
+            <button
+              onClick={resetAll}
+              className="px-6 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-semibold py-4 rounded-xl transition text-sm"
+            >
+              Reset
+            </button>
+            <button
+              onClick={handleExecuteBatch}
+              className="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-4 rounded-xl transition text-lg"
+            >
+              Submit Batch ({trades.filter((t) => t.status === "quoted").length}{" "}
+              {trades.filter((t) => t.status === "quoted").length === 1 ? "swap" : "swaps"})
+            </button>
+          </>
+        ) : null}
+
+        {batchStep === "executing" ? (
+          <button
+            disabled
+            className="flex-1 bg-zinc-700 text-zinc-400 font-semibold py-4 rounded-xl text-lg animate-pulse"
+          >
+            Confirm batch in wallet...
+          </button>
+        ) : null}
+      </div>
+
+      {/* Done state */}
+      {batchStep === "done" && (
+        <div className="text-center space-y-2 bg-green-900/10 border border-green-800/30 rounded-xl p-4">
+          <div className="text-green-400 font-semibold text-lg">
             Batch swap submitted!
           </div>
           {txId && (
@@ -389,19 +427,11 @@ export default function BatchSwapPanel() {
           )}
           <button
             onClick={resetAll}
-            className="block mx-auto mt-2 text-sm text-zinc-400 hover:text-white"
+            className="mt-2 px-6 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm transition"
           >
-            New batch
+            New Batch
           </button>
         </div>
-      ) : (
-        <button
-          disabled
-          className="w-full bg-zinc-700 text-zinc-400 font-semibold py-4 rounded-xl text-lg"
-        >
-          {batchStep === "quoting" && "Getting quotes..."}
-          {batchStep === "executing" && "Confirm batch in wallet..."}
-        </button>
       )}
 
       {/* Error display */}
@@ -412,4 +442,125 @@ export default function BatchSwapPanel() {
       )}
     </div>
   );
+}
+
+// ── PnL Summary Component ──
+function BatchPnL({ trades }: { trades: TradeRow[] }) {
+  const quotedTrades = trades.filter((t) => t.status === "quoted" && t.outputAmount);
+  const failedTrades = trades.filter((t) => t.status === "error");
+  const pendingTrades = trades.filter((t) => t.sellAmount && parseFloat(t.sellAmount) > 0 && t.status === "idle");
+
+  if (quotedTrades.length === 0 && failedTrades.length === 0) return null;
+
+  // Aggregate sell/buy amounts by token
+  const sellTotals = new Map<string, number>();
+  const buyTotals = new Map<string, number>();
+
+  for (const t of quotedTrades) {
+    const sellAmt = parseFloat(t.sellAmount) || 0;
+    const buyAmt = parseFloat(t.outputAmount) || 0;
+    sellTotals.set(t.sellToken.symbol, (sellTotals.get(t.sellToken.symbol) || 0) + sellAmt);
+    buyTotals.set(t.buyToken.symbol, (buyTotals.get(t.buyToken.symbol) || 0) + buyAmt);
+  }
+
+  // Net position per token (positive = receiving, negative = spending)
+  const netPositions = new Map<string, number>();
+  for (const [sym, amt] of sellTotals) {
+    netPositions.set(sym, (netPositions.get(sym) || 0) - amt);
+  }
+  for (const [sym, amt] of buyTotals) {
+    netPositions.set(sym, (netPositions.get(sym) || 0) + amt);
+  }
+
+  const sortedPositions = [...netPositions.entries()].sort((a, b) => b[1] - a[1]);
+
+  return (
+    <div className="bg-zinc-800/60 border border-zinc-700/50 rounded-xl p-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-white">Batch Summary</h3>
+        <div className="flex gap-2 text-xs">
+          {quotedTrades.length > 0 && (
+            <span className="text-green-400">{quotedTrades.length} quoted</span>
+          )}
+          {failedTrades.length > 0 && (
+            <span className="text-red-400">{failedTrades.length} failed</span>
+          )}
+          {pendingTrades.length > 0 && (
+            <span className="text-zinc-500">{pendingTrades.length} pending</span>
+          )}
+        </div>
+      </div>
+
+      {/* Sell side */}
+      {sellTotals.size > 0 && (
+        <div className="space-y-1">
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">You spend</p>
+          <div className="flex flex-wrap gap-2">
+            {[...sellTotals.entries()].map(([sym, amt]) => (
+              <div key={`sell-${sym}`} className="flex items-center gap-1.5 bg-red-900/20 border border-red-800/30 rounded-lg px-2.5 py-1.5">
+                <TokenIcon symbol={sym} size="sm" />
+                <span className="text-sm font-mono text-red-400">-{formatPnL(amt)}</span>
+                <span className="text-xs text-red-400/60">{sym}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Buy side */}
+      {buyTotals.size > 0 && (
+        <div className="space-y-1">
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">You receive</p>
+          <div className="flex flex-wrap gap-2">
+            {[...buyTotals.entries()].map(([sym, amt]) => (
+              <div key={`buy-${sym}`} className="flex items-center gap-1.5 bg-green-900/20 border border-green-800/30 rounded-lg px-2.5 py-1.5">
+                <TokenIcon symbol={sym} size="sm" />
+                <span className="text-sm font-mono text-green-400">+{formatPnL(amt)}</span>
+                <span className="text-xs text-green-400/60">{sym}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Net position */}
+      {sortedPositions.length > 0 && (
+        <div className="border-t border-zinc-700/50 pt-3 space-y-1">
+          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Net Position</p>
+          <div className="flex flex-wrap gap-2">
+            {sortedPositions.map(([sym, net]) => (
+              <div
+                key={`net-${sym}`}
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 ${
+                  net > 0
+                    ? "bg-green-900/10 border border-green-800/20"
+                    : "bg-red-900/10 border border-red-800/20"
+                }`}
+              >
+                <TokenIcon symbol={sym} size="sm" />
+                <span
+                  className={`text-sm font-mono ${
+                    net > 0 ? "text-green-400" : "text-red-400"
+                  }`}
+                >
+                  {net > 0 ? "+" : ""}{formatPnL(net)}
+                </span>
+                <span className="text-xs text-zinc-500">{sym}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function formatPnL(num: number): string {
+  const abs = Math.abs(num);
+  if (abs === 0) return "0";
+  if (abs < 0.0001) return abs.toExponential(2);
+  if (abs < 1) return abs.toPrecision(4);
+  if (abs < 1000) return abs.toFixed(2);
+  if (abs < 1_000_000) return abs.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  return `${(abs / 1_000_000).toFixed(2)}M`;
 }

@@ -10,6 +10,7 @@ import {
   V4_POOL_MANAGER_ADDRESS,
   type PoolConfig,
 } from "@/lib/pool-config";
+import { isPairQuotable } from "@/lib/token-config";
 import TokenIcon from "@/components/TokenIcon";
 
 const V3_POOL_ABI = parseAbi([
@@ -199,10 +200,11 @@ export default function PoolsDashboard() {
       </div>
 
       {/* Sort headers */}
-      <div className="hidden sm:grid grid-cols-[1fr_60px_70px_1fr_1fr] gap-2 px-3 text-[10px] text-zinc-500 uppercase tracking-wider">
+      <div className="hidden sm:grid grid-cols-[1fr_60px_70px_50px_1fr_1fr] gap-2 px-3 text-[10px] text-zinc-500 uppercase tracking-wider">
         <SortHeader label="Pair" sortKey="pair" current={sortKey} onSort={setSortKey} />
         <SortHeader label="Version" sortKey="version" current={sortKey} onSort={setSortKey} />
         <SortHeader label="Fee" sortKey="fee" current={sortKey} onSort={setSortKey} />
+        <span>RFQ</span>
         <span>Token 0 Balance</span>
         <span>Token 1 Balance</span>
       </div>
@@ -243,7 +245,7 @@ function PoolRow({ pool }: { pool: PoolData }) {
 
   return (
     <div
-      className={`grid grid-cols-1 sm:grid-cols-[1fr_60px_70px_1fr_1fr] gap-2 items-center bg-zinc-800 rounded-xl p-3 transition hover:bg-zinc-750 ${
+      className={`grid grid-cols-1 sm:grid-cols-[1fr_60px_70px_50px_1fr_1fr] gap-2 items-center bg-zinc-800 rounded-xl p-3 transition hover:bg-zinc-750 ${
         !hasFunds ? "opacity-50" : ""
       }`}
     >
@@ -255,16 +257,25 @@ function PoolRow({ pool }: { pool: PoolData }) {
         </div>
         <div>
           <p className="text-sm font-semibold text-white">{pool.pair}</p>
-          {pool.poolAddress && (
+          {pool.poolAddress ? (
             <a
-              href={`https://sepolia.basescan.org/address/${pool.poolAddress}`}
+              href={`https://sepolia.etherscan.io/address/${pool.poolAddress}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-zinc-600 hover:text-zinc-400"
+              className="text-[10px] text-zinc-600 hover:text-violet-400 transition"
             >
-              {pool.poolAddress.slice(0, 8)}...
+              {pool.poolAddress.slice(0, 8)}...{pool.poolAddress.slice(-4)} ↗
             </a>
-          )}
+          ) : pool.version === "v4" ? (
+            <a
+              href={`https://sepolia.etherscan.io/address/${V4_POOL_MANAGER_ADDRESS}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-zinc-600 hover:text-violet-400 transition"
+            >
+              PoolManager ↗
+            </a>
+          ) : null}
         </div>
       </div>
 
@@ -284,6 +295,19 @@ function PoolRow({ pool }: { pool: PoolData }) {
       {/* Fee */}
       <span className="text-xs text-zinc-400 font-mono">{feePercent}</span>
 
+      {/* RFQ status */}
+      <div>
+        {isPairQuotable(pool.token0.symbol, pool.token1.symbol) ? (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-400">
+            Live
+          </span>
+        ) : (
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400" title="V4-only pair — RFQ not available via Uniswap Trading API">
+            N/A
+          </span>
+        )}
+      </div>
+
       {/* Token 0 balance */}
       <div className="flex items-center gap-1.5">
         <TokenIcon symbol={pool.token0.symbol} size="sm" />
@@ -291,7 +315,14 @@ function PoolRow({ pool }: { pool: PoolData }) {
           <p className="text-xs text-white font-mono">
             {pool.balance0 ? formatBalance(pool.balance0) : "—"}
           </p>
-          <p className="text-[10px] text-zinc-500">{pool.token0.symbol}</p>
+          <a
+            href={`https://sepolia.etherscan.io/token/${pool.token0.address}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-zinc-500 hover:text-violet-400 transition"
+          >
+            {pool.token0.symbol} ↗
+          </a>
         </div>
       </div>
 
@@ -302,7 +333,14 @@ function PoolRow({ pool }: { pool: PoolData }) {
           <p className="text-xs text-white font-mono">
             {pool.balance1 ? formatBalance(pool.balance1) : "—"}
           </p>
-          <p className="text-[10px] text-zinc-500">{pool.token1.symbol}</p>
+          <a
+            href={`https://sepolia.etherscan.io/token/${pool.token1.address}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-zinc-500 hover:text-violet-400 transition"
+          >
+            {pool.token1.symbol} ↗
+          </a>
         </div>
       </div>
     </div>

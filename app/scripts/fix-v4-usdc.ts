@@ -6,12 +6,12 @@ import {
   zeroAddress,
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { sepolia } from "viem/chains";
 import * as fs from "fs";
 import * as path from "path";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
-const V4_POOL_MODIFY_TEST = "0x37429cd17cb1454c34e7f50b09725202fd533039";
+const V4_POOL_MODIFY_TEST = "0x0c478023803a644c94c4ce1c1e7b9a087e411b0a";
 
 const V4_MODIFY_ABI = parseAbi([
   "function modifyLiquidity((address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) key, (int24 tickLower, int24 tickUpper, int256 liquidityDelta, bytes32 salt) params, bytes hookData) external payable returns (int256 delta0, int256 delta1)",
@@ -44,8 +44,8 @@ async function main() {
 
   const account = privateKeyToAccount(privateKey as `0x${string}`);
   const transport = http("https://sepolia.base.org", { retryCount: 5, retryDelay: 3000 });
-  const walletClient = createWalletClient({ account, chain: baseSepolia, transport });
-  const publicClient = createPublicClient({ chain: baseSepolia, transport });
+  const walletClient = createWalletClient({ account, chain: sepolia, transport });
+  const publicClient = createPublicClient({ chain: sepolia, transport });
 
   let nonce = await publicClient.getTransactionCount({ address: account.address });
   console.log(`Deployer: ${account.address} (nonce: ${nonce})\n`);
