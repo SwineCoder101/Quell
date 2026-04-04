@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Quell - Swap on Base Sepolia",
-  description: "Uniswap-powered token swaps on Base Sepolia testnet",
+  title: "Quell - Swap on Base",
+  description: "Uniswap-powered token swaps on Base",
 };
 
 export default function RootLayout({

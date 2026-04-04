@@ -80,6 +80,40 @@ export async function getSwap(quoteResponse: Record<string, unknown>, signature?
   return res.json();
 }
 
+export interface BatchSwapParams {
+  quote: Record<string, unknown>;
+  permitData?: Record<string, unknown>;
+  deadline?: number;
+  urgency?: "normal" | "fast" | "urgent";
+}
+
+export interface BatchSwapCall {
+  to: string;
+  data: string;
+  value: string;
+}
+
+export interface BatchSwapResponse {
+  requestId: string;
+  from: string;
+  chainId: number;
+  calls: BatchSwapCall[];
+  gasFee?: string;
+}
+
+export async function getBatchSwap(params: BatchSwapParams): Promise<BatchSwapResponse> {
+  const res = await fetch("/api/uniswap/swap_5792", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || err.error || `Batch swap failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 // Helper to extract output amount from quote response regardless of routing type
 export function getOutputAmount(quoteResponse: Record<string, unknown>): string {
   const routing = quoteResponse.routing as string;
