@@ -5,18 +5,26 @@ import { ConnectButton } from "@rainbow-me/rainbowkit";
 import SwapPanel from "@/components/SwapPanel";
 import BatchSwapPanel from "@/components/BatchSwapPanel";
 import PortfolioPanel from "@/components/PortfolioPanel";
+import PoolsDashboard from "@/components/PoolsDashboard";
 
-type Tab = "portfolio" | "swap" | "batch";
+type Tab = "portfolio" | "pools" | "swap" | "batch";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("portfolio");
 
   const maxWidth =
-    activeTab === "batch"
-      ? "w-full max-w-3xl"
+    activeTab === "batch" || activeTab === "pools"
+      ? "w-full max-w-4xl"
       : activeTab === "portfolio"
         ? "w-full max-w-lg"
         : "w-full max-w-md";
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "portfolio", label: "Portfolio" },
+    { key: "pools", label: "Pools" },
+    { key: "swap", label: "Swap" },
+    { key: "batch", label: "Batch Swap" },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -37,39 +45,23 @@ export default function Home() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-2xl">
             {/* Tab switcher */}
             <div className="flex gap-1 mb-4 bg-zinc-800 rounded-xl p-1">
-              <button
-                onClick={() => setActiveTab("portfolio")}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition ${
-                  activeTab === "portfolio"
-                    ? "bg-zinc-700 text-white"
-                    : "text-zinc-400 hover:text-zinc-300"
-                }`}
-              >
-                Portfolio
-              </button>
-              <button
-                onClick={() => setActiveTab("swap")}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition ${
-                  activeTab === "swap"
-                    ? "bg-zinc-700 text-white"
-                    : "text-zinc-400 hover:text-zinc-300"
-                }`}
-              >
-                Swap
-              </button>
-              <button
-                onClick={() => setActiveTab("batch")}
-                className={`flex-1 py-2 text-sm font-medium rounded-lg transition ${
-                  activeTab === "batch"
-                    ? "bg-zinc-700 text-white"
-                    : "text-zinc-400 hover:text-zinc-300"
-                }`}
-              >
-                Batch Swap
-              </button>
+              {tabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex-1 py-2 text-sm font-medium rounded-lg transition ${
+                    activeTab === tab.key
+                      ? "bg-zinc-700 text-white"
+                      : "text-zinc-400 hover:text-zinc-300"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
             {activeTab === "portfolio" && <PortfolioPanel />}
+            {activeTab === "pools" && <PoolsDashboard />}
             {activeTab === "swap" && <SwapPanel />}
             {activeTab === "batch" && <BatchSwapPanel />}
           </div>

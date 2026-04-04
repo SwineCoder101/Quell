@@ -10,7 +10,8 @@
     "transfer": "npx tsx --env-file=.env.local scripts/erc20-transfer.ts",
     "compile": "npx tsx scripts/compile.ts",
     "deploy-tokens": "npx tsx --env-file=.env.local scripts/deploy-tokens.ts",
-    "create-pools": "npx tsx --env-file=.env.local scripts/create-pools.ts"
+    "create-pools": "npx tsx --env-file=.env.local scripts/create-pools.ts",
+    "add-liquidity": "npx tsx --env-file=.env.local scripts/add-liquidity.ts"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.6.1",
