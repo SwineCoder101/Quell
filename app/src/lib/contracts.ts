@@ -8,27 +8,8 @@ export const CONTRACTS = {
   UNIVERSAL_ROUTER: "0x492E6456D9528771018DeB9E87ef7750EF184104" as const,
 } as const;
 
-// Known tokens on Base Sepolia
-export const TOKENS = {
-  WETH: {
-    address: "0x4200000000000000000000000000000000000006" as `0x${string}`,
-    decimals: 18,
-    symbol: "WETH",
-    name: "Wrapped Ether",
-  },
-  USDC: {
-    address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as `0x${string}`,
-    decimals: 6,
-    symbol: "USDC",
-    name: "USD Coin",
-  },
-  LINK: {
-    address: "0xE4aB69C077896252FAFBD49EFD26B5D171A32410" as `0x${string}`,
-    decimals: 18,
-    symbol: "LINK",
-    name: "Chainlink Token",
-  },
-} as const;
+// Token addresses are managed in token-config.ts (deployed mock tokens)
+export { DEPLOYED_TOKENS as TOKENS } from "./token-config";
 
 // Fee tiers available on Uniswap V3
 export const FEE_TIERS = {
