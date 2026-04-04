@@ -4,28 +4,24 @@ import { useState, useCallback } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { useSendCalls } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { TOKENS } from "@/lib/contracts";
+import { TOKEN_LIST, NATIVE_ETH as NATIVE_ETH_CONFIG, type TokenConfig } from "@/lib/token-config";
 import {
   getQuote,
   getBatchSwap,
   getOutputAmount,
   type BatchSwapCall,
 } from "@/lib/uniswap-api";
+import TokenIcon from "@/components/TokenIcon";
 
-const BASE_CHAIN_ID = "8453";
-const NATIVE_ETH = "0x0000000000000000000000000000000000000000";
+const BASE_SEPOLIA_CHAIN_ID = "84532";
 
-interface TokenOption {
-  symbol: string;
-  address: string;
-  decimals: number;
+interface TokenOption extends TokenConfig {
   isNative?: boolean;
 }
 
 const TOKEN_OPTIONS: TokenOption[] = [
-  { symbol: "ETH", address: NATIVE_ETH, decimals: 18, isNative: true },
-  { symbol: "WETH", address: TOKENS.WETH.address, decimals: 18 },
-  { symbol: "USDC", address: TOKENS.USDC.address, decimals: 6 },
+  { ...NATIVE_ETH_CONFIG, isNative: true },
+  ...TOKEN_LIST,
 ];
 
 interface TradeRow {
@@ -129,8 +125,8 @@ export default function BatchSwapPanel() {
             swapper: address,
             tokenIn: trade.sellToken.address,
             tokenOut: trade.buyToken.address,
-            tokenInChainId: BASE_CHAIN_ID,
-            tokenOutChainId: BASE_CHAIN_ID,
+            tokenInChainId: BASE_SEPOLIA_CHAIN_ID,
+            tokenOutChainId: BASE_SEPOLIA_CHAIN_ID,
             amount: rawAmount,
             type: "EXACT_INPUT",
             slippageTolerance: 0.5,
@@ -262,23 +258,26 @@ export default function BatchSwapPanel() {
           </span>
 
           {/* Sell Token */}
-          <select
-            className="bg-zinc-700 text-white rounded-lg px-2 py-2 text-sm border border-zinc-600 w-full"
-            value={trade.sellToken.symbol}
-            onChange={(e) => {
-              const t = TOKEN_OPTIONS.find((o) => o.symbol === e.target.value)!;
-              updateTrade(trade.id, { sellToken: t, quote: null, outputAmount: "", status: "idle" });
-            }}
-            disabled={batchStep === "executing"}
-          >
-            {TOKEN_OPTIONS.filter((o) => o.symbol !== trade.buyToken.symbol).map(
-              (o) => (
-                <option key={o.symbol} value={o.symbol}>
-                  {o.symbol}
-                </option>
-              )
-            )}
-          </select>
+          <div className="flex items-center gap-1.5">
+            <TokenIcon symbol={trade.sellToken.symbol} size="sm" />
+            <select
+              className="bg-zinc-700 text-white rounded-lg px-2 py-2 text-sm border border-zinc-600 flex-1 min-w-0"
+              value={trade.sellToken.symbol}
+              onChange={(e) => {
+                const t = TOKEN_OPTIONS.find((o) => o.symbol === e.target.value)!;
+                updateTrade(trade.id, { sellToken: t, quote: null, outputAmount: "", status: "idle" });
+              }}
+              disabled={batchStep === "executing"}
+            >
+              {TOKEN_OPTIONS.filter((o) => o.symbol !== trade.buyToken.symbol).map(
+                (o) => (
+                  <option key={o.symbol} value={o.symbol}>
+                    {o.symbol}
+                  </option>
+                )
+              )}
+            </select>
+          </div>
 
           {/* Sell Amount */}
           <input
@@ -299,23 +298,26 @@ export default function BatchSwapPanel() {
           />
 
           {/* Buy Token */}
-          <select
-            className="bg-zinc-700 text-white rounded-lg px-2 py-2 text-sm border border-zinc-600 w-full"
-            value={trade.buyToken.symbol}
-            onChange={(e) => {
-              const t = TOKEN_OPTIONS.find((o) => o.symbol === e.target.value)!;
-              updateTrade(trade.id, { buyToken: t, quote: null, outputAmount: "", status: "idle" });
-            }}
-            disabled={batchStep === "executing"}
-          >
-            {TOKEN_OPTIONS.filter((o) => o.symbol !== trade.sellToken.symbol).map(
-              (o) => (
-                <option key={o.symbol} value={o.symbol}>
-                  {o.symbol}
-                </option>
-              )
-            )}
-          </select>
+          <div className="flex items-center gap-1.5">
+            <TokenIcon symbol={trade.buyToken.symbol} size="sm" />
+            <select
+              className="bg-zinc-700 text-white rounded-lg px-2 py-2 text-sm border border-zinc-600 flex-1 min-w-0"
+              value={trade.buyToken.symbol}
+              onChange={(e) => {
+                const t = TOKEN_OPTIONS.find((o) => o.symbol === e.target.value)!;
+                updateTrade(trade.id, { buyToken: t, quote: null, outputAmount: "", status: "idle" });
+              }}
+              disabled={batchStep === "executing"}
+            >
+              {TOKEN_OPTIONS.filter((o) => o.symbol !== trade.sellToken.symbol).map(
+                (o) => (
+                  <option key={o.symbol} value={o.symbol}>
+                    {o.symbol}
+                  </option>
+                )
+              )}
+            </select>
+          </div>
 
           {/* Output */}
           <div className="text-sm text-white px-2 truncate">

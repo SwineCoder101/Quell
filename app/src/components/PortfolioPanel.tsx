@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAccount, usePublicClient } from "wagmi";
 import { formatUnits, erc20Abi } from "viem";
-import { TOKENS } from "@/lib/contracts";
+import { TOKEN_LIST } from "@/lib/token-config";
+import TokenIcon from "@/components/TokenIcon";
 
 interface TokenBalance {
   symbol: string;
@@ -13,8 +14,6 @@ interface TokenBalance {
   balance: bigint;
   formatted: string;
 }
-
-const TRACKED_TOKENS = Object.values(TOKENS);
 
 export default function PortfolioPanel() {
   const { address, isConnected } = useAccount();
@@ -29,10 +28,9 @@ export default function PortfolioPanel() {
     setLoading(true);
 
     try {
-      // Fetch native ETH + all ERC-20 balances in parallel
       const [ethBalance, ...tokenResults] = await Promise.all([
         publicClient.getBalance({ address }),
-        ...TRACKED_TOKENS.map((token) =>
+        ...TOKEN_LIST.map((token) =>
           publicClient.readContract({
             address: token.address,
             abi: erc20Abi,
@@ -51,7 +49,7 @@ export default function PortfolioPanel() {
           balance: ethBalance,
           formatted: formatUnits(ethBalance, 18),
         },
-        ...TRACKED_TOKENS.map((token, i) => ({
+        ...TOKEN_LIST.map((token, i) => ({
           symbol: token.symbol,
           name: token.name,
           address: token.address,
@@ -87,7 +85,6 @@ export default function PortfolioPanel() {
 
   return (
     <div className="space-y-6">
-      {/* Wallet address */}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs text-zinc-500 uppercase tracking-wider">Wallet</p>
@@ -104,7 +101,6 @@ export default function PortfolioPanel() {
         </button>
       </div>
 
-      {/* Loading state */}
       {loading && balances.length === 0 && (
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
@@ -125,7 +121,6 @@ export default function PortfolioPanel() {
         </div>
       )}
 
-      {/* Token balances */}
       {nonZeroBalances.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs text-zinc-500 uppercase tracking-wider px-1">
@@ -137,7 +132,6 @@ export default function PortfolioPanel() {
         </div>
       )}
 
-      {/* Zero balances */}
       {zeroBalances.length > 0 && (
         <div className="space-y-2">
           <p className="text-xs text-zinc-500 uppercase tracking-wider px-1">
@@ -149,7 +143,6 @@ export default function PortfolioPanel() {
         </div>
       )}
 
-      {/* Last updated */}
       {lastUpdated && (
         <p className="text-center text-xs text-zinc-600">
           Updated {lastUpdated.toLocaleTimeString()}
@@ -169,7 +162,7 @@ function TokenRow({ token, dimmed }: { token: TokenBalance; dimmed?: boolean }) 
       }`}
     >
       <div className="flex items-center gap-3">
-        <TokenIcon symbol={token.symbol} />
+        <TokenIcon symbol={token.symbol} size="lg" />
         <div>
           <p className="text-sm font-semibold text-white">{token.symbol}</p>
           <p className="text-xs text-zinc-500">{token.name}</p>
@@ -179,7 +172,7 @@ function TokenRow({ token, dimmed }: { token: TokenBalance; dimmed?: boolean }) 
         <p className="text-sm font-mono text-white">{displayBalance}</p>
         {token.address !== "native" && (
           <a
-            href={`https://basescan.org/token/${token.address}`}
+            href={`https://sepolia.basescan.org/token/${token.address}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-[10px] text-zinc-600 hover:text-zinc-400 transition"
@@ -192,27 +185,6 @@ function TokenRow({ token, dimmed }: { token: TokenBalance; dimmed?: boolean }) 
   );
 }
 
-function TokenIcon({ symbol }: { symbol: string }) {
-  const colors: Record<string, string> = {
-    ETH: "from-blue-500 to-blue-700",
-    WETH: "from-blue-400 to-blue-600",
-    USDC: "from-blue-400 to-cyan-500",
-    DAI: "from-amber-400 to-amber-600",
-    cbETH: "from-blue-500 to-indigo-600",
-    USDbC: "from-blue-500 to-cyan-600",
-  };
-
-  return (
-    <div
-      className={`w-10 h-10 rounded-full bg-gradient-to-br ${
-        colors[symbol] || "from-zinc-500 to-zinc-700"
-      } flex items-center justify-center text-xs font-bold text-white shadow-lg`}
-    >
-      {symbol.slice(0, 2)}
-    </div>
-  );
-}
-
 function formatBalance(formatted: string): string {
   const num = parseFloat(formatted);
   if (num === 0) return "0";
@@ -220,5 +192,6 @@ function formatBalance(formatted: string): string {
   if (num < 1) return num.toPrecision(4);
   if (num < 1000) return num.toFixed(4);
   if (num < 1_000_000) return num.toLocaleString(undefined, { maximumFractionDigits: 2 });
-  return `${(num / 1_000_000).toFixed(2)}M`;
+  if (num < 1_000_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
+  return `${(num / 1_000_000_000).toFixed(2)}B`;
 }

@@ -1,0 +1,122 @@
+{
+  "USDC": {
+    "address": "0x01628afa8fe8f78d8aef0a22e2d7efc23483d5b9",
+    "symbol": "USDC",
+    "name": "USD Coin",
+    "decimals": 6
+  },
+  "WETH": {
+    "address": "0x2d3f715022a81c39b102fafe5d3d119561e6e38f",
+    "symbol": "WETH",
+    "name": "Wrapped Ether",
+    "decimals": 18
+  },
+  "DAI": {
+    "address": "0xf019feed5b9c23927e562db1b81a38c553041b87",
+    "symbol": "DAI",
+    "name": "Dai Stablecoin",
+    "decimals": 18
+  },
+  "USDT": {
+    "address": "0x008607499b9c7dff6c539ff9629450cc5ce8d0a0",
+    "symbol": "USDT",
+    "name": "Tether USD",
+    "decimals": 6
+  },
+  "WBTC": {
+    "address": "0xa1f7e52301dc0201ff935e133ea7cddcee388b38",
+    "symbol": "WBTC",
+    "name": "Wrapped BTC",
+    "decimals": 8
+  },
+  "LINK": {
+    "address": "0xc7c55a318c5c05dc5060dc28d01e8237b5057951",
+    "symbol": "LINK",
+    "name": "Chainlink",
+    "decimals": 18
+  },
+  "UNI": {
+    "address": "0xb90ace2f72be1f5a916c0b9937b70a9ee2849463",
+    "symbol": "UNI",
+    "name": "Uniswap",
+    "decimals": 18
+  },
+  "AAVE": {
+    "address": "0xa99e1994f37397a1c174d20acc9147869460ece6",
+    "symbol": "AAVE",
+    "name": "Aave",
+    "decimals": 18
+  },
+  "ARB": {
+    "address": "0xb0a82cfe03ec1a6b9c6b821cefc56b6ea8dc73fa",
+    "symbol": "ARB",
+    "name": "Arbitrum",
+    "decimals": 18
+  },
+  "OP": {
+    "address": "0xb687b48ed8b3a367ca23b4f365b3568e2a8da0d9",
+    "symbol": "OP",
+    "name": "Optimism",
+    "decimals": 18
+  },
+  "SNX": {
+    "address": "0x89596c433ea951750c9e165d827f77e1b9c225f9",
+    "symbol": "SNX",
+    "name": "Synthetix",
+    "decimals": 18
+  },
+  "MKR": {
+    "address": "0xe7e7fb85a33ce518c39df92ab6a7cebe55cd0b6c",
+    "symbol": "MKR",
+    "name": "Maker",
+    "decimals": 18
+  },
+  "COMP": {
+    "address": "0x9c462dbd59ff0675b31970d11bb3ae93e7283681",
+    "symbol": "COMP",
+    "name": "Compound",
+    "decimals": 18
+  },
+  "CRV": {
+    "address": "0x12e2b23b99429c7738ec3dc4682ddc437a3a3fd5",
+    "symbol": "CRV",
+    "name": "Curve DAO Token",
+    "decimals": 18
+  },
+  "GRT": {
+    "address": "0xea79f42fddd4f60b8690df944aacd2545a34f086",
+    "symbol": "GRT",
+    "name": "The Graph",
+    "decimals": 18
+  },
+  "LDO": {
+    "address": "0x06d530d52c9949fb13c6a062e9b4941cbc25b60d",
+    "symbol": "LDO",
+    "name": "Lido DAO",
+    "decimals": 18
+  },
+  "PEPE": {
+    "address": "0xb2b9ebf602ef3f737283697921ac25788bdcf56a",
+    "symbol": "PEPE",
+    "name": "Pepe",
+    "decimals": 18
+  },
+  "SHIB": {
+    "address": "0x8c645f07a0727a28774bc7afd1ea5e1cd8083a1f",
+    "symbol": "SHIB",
+    "name": "Shiba Inu",
+    "decimals": 18
+  },
+  "MATIC": {
+    "address": "0x8637576850b339d41cda9559dc6c10992dc7acc5",
+    "symbol": "MATIC",
+    "name": "Polygon",
+    "decimals": 18
+  },
+  "DOGE": {
+    "address": "0x7a7d8d490df543f093f296bb76beb56cdbb683cb",
+    "symbol": "DOGE",
+    "name": "Dogecoin",
+    "decimals": 18
+  }
+}

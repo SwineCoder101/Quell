@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "transfer": "npx tsx --env-file=.env.local scripts/erc20-transfer.ts"
+    "transfer": "npx tsx --env-file=.env.local scripts/erc20-transfer.ts",
+    "compile": "npx tsx scripts/compile.ts",
+    "deploy-tokens": "npx tsx --env-file=.env.local scripts/deploy-tokens.ts",
+    "create-pools": "npx tsx --env-file=.env.local scripts/create-pools.ts"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.6.1",
@@ -31,6 +34,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.2",
+    "solc": "^0.8.26",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -3,25 +3,19 @@
 import { useState, useCallback } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { TOKENS } from "@/lib/contracts";
+import { TOKEN_LIST, NATIVE_ETH, type TokenConfig } from "@/lib/token-config";
 import { checkApproval, getQuote, getSwap, getOutputAmount } from "@/lib/uniswap-api";
+import TokenIcon from "@/components/TokenIcon";
 
-const BASE_CHAIN_ID = "8453";
+const BASE_SEPOLIA_CHAIN_ID = "84532";
 
-// ETH represented as a special address for the API
-const NATIVE_ETH = "0x0000000000000000000000000000000000000000";
-
-interface TokenOption {
-  symbol: string;
-  address: string;
-  decimals: number;
+interface TokenOption extends TokenConfig {
   isNative?: boolean;
 }
 
 const TOKEN_OPTIONS: TokenOption[] = [
-  { symbol: "ETH", address: NATIVE_ETH, decimals: 18, isNative: true },
-  { symbol: "WETH", address: TOKENS.WETH.address, decimals: 18 },
-  { symbol: "USDC", address: TOKENS.USDC.address, decimals: 6 },
+  { ...NATIVE_ETH, isNative: true },
+  ...TOKEN_LIST,
 ];
 
 type Step = "idle" | "quoting" | "quoted" | "approving" | "signing" | "swapping" | "done" | "error";
@@ -32,7 +26,7 @@ export default function SwapPanel() {
   const publicClient = usePublicClient();
 
   const [tokenIn, setTokenIn] = useState<TokenOption>(TOKEN_OPTIONS[0]);
-  const [tokenOut, setTokenOut] = useState<TokenOption>(TOKEN_OPTIONS[2]);
+  const [tokenOut, setTokenOut] = useState<TokenOption>(TOKEN_OPTIONS.find((t) => t.symbol === "USDC")!);
   const [amountIn, setAmountIn] = useState("");
   const [quoteResponse, setQuoteResponse] = useState<Record<string, unknown> | null>(null);
   const [outputAmount, setOutputAmount] = useState("");
@@ -62,8 +56,8 @@ export default function SwapPanel() {
         swapper: address,
         tokenIn: tokenIn.address,
         tokenOut: tokenOut.address,
-        tokenInChainId: BASE_CHAIN_ID,
-        tokenOutChainId: BASE_CHAIN_ID,
+        tokenInChainId: BASE_SEPOLIA_CHAIN_ID,
+        tokenOutChainId: BASE_SEPOLIA_CHAIN_ID,
         amount: rawAmount,
         type: "EXACT_INPUT",
         slippageTolerance: 0.5,
@@ -84,14 +78,13 @@ export default function SwapPanel() {
     setError("");
 
     try {
-      // Step 1: Check approval (skip for native ETH)
       if (!tokenIn.isNative) {
         setStep("approving");
         const approvalRes = await checkApproval({
           walletAddress: address,
           token: tokenIn.address,
           amount: parseUnits(amountIn, tokenIn.decimals).toString(),
-          chainId: 8453,
+          chainId: 84532,
         });
 
         if (approvalRes.approval) {
@@ -104,7 +97,6 @@ export default function SwapPanel() {
         }
       }
 
-      // Step 2: Sign permit if needed
       let signature: string | undefined;
       const permitData = quoteResponse.permitData as Record<string, unknown> | null;
 
@@ -120,7 +112,6 @@ export default function SwapPanel() {
         });
       }
 
-      // Step 3: Get swap calldata
       setStep("swapping");
       const swapRes = await getSwap(quoteResponse, signature);
 
@@ -128,7 +119,6 @@ export default function SwapPanel() {
         throw new Error("Swap data is empty — quote may have expired. Please re-quote.");
       }
 
-      // Step 4: Execute the swap transaction
       const tx = await walletClient.sendTransaction({
         to: swapRes.swap.to as `0x${string}`,
         data: swapRes.swap.data as `0x${string}`,
@@ -166,21 +156,12 @@ export default function SwapPanel() {
       <div className="bg-zinc-800 rounded-xl p-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-zinc-400">You pay</span>
-          <select
-            className="bg-zinc-700 text-white rounded-lg px-3 py-1 text-sm border border-zinc-600"
-            value={tokenIn.symbol}
-            onChange={(e) => {
-              const t = TOKEN_OPTIONS.find((t) => t.symbol === e.target.value)!;
-              setTokenIn(t);
-              resetState();
-            }}
-          >
-            {TOKEN_OPTIONS.filter((t) => t.symbol !== tokenOut.symbol).map((t) => (
-              <option key={t.symbol} value={t.symbol}>
-                {t.symbol}
-              </option>
-            ))}
-          </select>
+          <TokenSelector
+            tokens={TOKEN_OPTIONS}
+            selected={tokenIn}
+            exclude={tokenOut.symbol}
+            onChange={(t) => { setTokenIn(t); resetState(); }}
+          />
         </div>
         <input
           type="text"
@@ -210,21 +191,12 @@ export default function SwapPanel() {
       <div className="bg-zinc-800 rounded-xl p-4">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm text-zinc-400">You receive</span>
-          <select
-            className="bg-zinc-700 text-white rounded-lg px-3 py-1 text-sm border border-zinc-600"
-            value={tokenOut.symbol}
-            onChange={(e) => {
-              const t = TOKEN_OPTIONS.find((t) => t.symbol === e.target.value)!;
-              setTokenOut(t);
-              resetState();
-            }}
-          >
-            {TOKEN_OPTIONS.filter((t) => t.symbol !== tokenIn.symbol).map((t) => (
-              <option key={t.symbol} value={t.symbol}>
-                {t.symbol}
-              </option>
-            ))}
-          </select>
+          <TokenSelector
+            tokens={TOKEN_OPTIONS}
+            selected={tokenOut}
+            exclude={tokenIn.symbol}
+            onChange={(t) => { setTokenOut(t); resetState(); }}
+          />
         </div>
         <div className="text-2xl text-white">
           {step === "quoting" ? (
@@ -245,16 +217,14 @@ export default function SwapPanel() {
             <span className="text-white">{quoteResponse.routing as string}</span>
           </div>
           {quoteResponse.routing === "CLASSIC" && (
-            <>
-              <div className="flex justify-between">
-                <span>Gas estimate</span>
-                <span className="text-white">
-                  {(quoteResponse.quote as Record<string, unknown>).gasFeeUSD
-                    ? `$${(quoteResponse.quote as Record<string, unknown>).gasFeeUSD}`
-                    : "N/A"}
-                </span>
-              </div>
-            </>
+            <div className="flex justify-between">
+              <span>Gas estimate</span>
+              <span className="text-white">
+                {(quoteResponse.quote as Record<string, unknown>).gasFeeUSD
+                  ? `$${(quoteResponse.quote as Record<string, unknown>).gasFeeUSD}`
+                  : "N/A"}
+              </span>
+            </div>
           )}
           <div className="flex justify-between">
             <span>Slippage</span>
@@ -284,7 +254,7 @@ export default function SwapPanel() {
           <div className="text-green-400 font-semibold">Swap successful!</div>
           {txHash && (
             <a
-              href={`https://basescan.org/tx/${txHash}`}
+              href={`https://sepolia.basescan.org/tx/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-violet-400 hover:underline text-sm"
@@ -313,6 +283,85 @@ export default function SwapPanel() {
         <div className="bg-red-900/30 border border-red-800 rounded-xl p-3 text-red-400 text-sm">
           {error}
         </div>
+      )}
+    </div>
+  );
+}
+
+function TokenSelector({
+  tokens,
+  selected,
+  exclude,
+  onChange,
+}: {
+  tokens: TokenOption[];
+  selected: TokenOption;
+  exclude: string;
+  onChange: (t: TokenOption) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const filtered = tokens
+    .filter((t) => t.symbol !== exclude)
+    .filter(
+      (t) =>
+        t.symbol.toLowerCase().includes(search.toLowerCase()) ||
+        t.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg px-3 py-1.5 text-sm border border-zinc-600 transition"
+      >
+        <TokenIcon symbol={selected.symbol} size="sm" />
+        <span className="font-medium">{selected.symbol}</span>
+        <svg className="w-3 h-3 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {open && (
+        <>
+          <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-2 w-64 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl z-30 overflow-hidden">
+            <div className="p-2">
+              <input
+                type="text"
+                placeholder="Search tokens..."
+                className="w-full bg-zinc-700 text-white text-sm rounded-lg px-3 py-2 outline-none border border-zinc-600 focus:border-violet-500"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="max-h-60 overflow-y-auto">
+              {filtered.map((t) => (
+                <button
+                  key={t.symbol}
+                  onClick={() => {
+                    onChange(t);
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-700 transition text-left ${
+                    t.symbol === selected.symbol ? "bg-zinc-700/50" : ""
+                  }`}
+                >
+                  <TokenIcon symbol={t.symbol} size="md" />
+                  <div>
+                    <p className="text-sm font-medium text-white">{t.symbol}</p>
+                    <p className="text-xs text-zinc-500">{t.name}</p>
+                  </div>
+                </button>
+              ))}
+              {filtered.length === 0 && (
+                <p className="text-center text-zinc-500 text-sm py-4">No tokens found</p>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

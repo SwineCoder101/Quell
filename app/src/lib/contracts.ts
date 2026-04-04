@@ -1,14 +1,14 @@
-// Uniswap V3 contract addresses on Base Mainnet (Chain ID: 8453)
+// Uniswap V3 contract addresses on Base Sepolia (Chain ID: 84532)
 export const CONTRACTS = {
-  UNISWAP_V3_FACTORY: "0x33128a8fC17869897dcE68Ed026d694621f6FDfD" as const,
-  SWAP_ROUTER_02: "0x2626664c2603336E57B271c5C0b26F421741e481" as const,
-  QUOTER_V2: "0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a" as const,
+  UNISWAP_V3_FACTORY: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24" as const,
+  SWAP_ROUTER_02: "0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4" as const,
+  QUOTER_V2: "0xC5290058841028F1614F3A6F0F5816cAd0df5E27" as const,
   NONFUNGIBLE_POSITION_MANAGER:
-    "0x03a520b32C04BF3bEEf7BEb72E919cf822Ed34f1" as const,
-  UNIVERSAL_ROUTER: "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD" as const,
+    "0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2" as const,
+  UNIVERSAL_ROUTER: "0x492E6456D9528771018DeB9E87ef7750EF184104" as const,
 } as const;
 
-// Known tokens on Base Mainnet
+// Known tokens on Base Sepolia
 export const TOKENS = {
   WETH: {
     address: "0x4200000000000000000000000000000000000006" as `0x${string}`,
@@ -17,28 +17,16 @@ export const TOKENS = {
     name: "Wrapped Ether",
   },
   USDC: {
-    address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" as `0x${string}`,
+    address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e" as `0x${string}`,
     decimals: 6,
     symbol: "USDC",
     name: "USD Coin",
   },
-  DAI: {
-    address: "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb" as `0x${string}`,
+  LINK: {
+    address: "0xE4aB69C077896252FAFBD49EFD26B5D171A32410" as `0x${string}`,
     decimals: 18,
-    symbol: "DAI",
-    name: "Dai Stablecoin",
-  },
-  cbETH: {
-    address: "0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22" as `0x${string}`,
-    decimals: 18,
-    symbol: "cbETH",
-    name: "Coinbase Wrapped Staked ETH",
-  },
-  USDbC: {
-    address: "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA" as `0x${string}`,
-    decimals: 6,
-    symbol: "USDbC",
-    name: "USD Base Coin",
+    symbol: "LINK",
+    name: "Chainlink Token",
   },
 } as const;
 
