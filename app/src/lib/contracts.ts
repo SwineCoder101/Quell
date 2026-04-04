@@ -5,7 +5,11 @@ export const CONTRACTS = {
   QUOTER_V2: "0xEd1f6473345F45b75F8179591dd5bA1888cf2FB3" as const,
   NONFUNGIBLE_POSITION_MANAGER:
     "0x1238536071E1c677A632429e3655c799b22cDA52" as const,
+  UNIVERSAL_ROUTER: "0x3A9D48AB9751398BbFa63ad67599Bb04e4BdF98b" as const,
 } as const;
+
+// Token addresses are managed in token-config.ts (deployed mock tokens)
+export { DEPLOYED_TOKENS as TOKENS } from "./token-config";
 
 // Fee tiers available on Uniswap V3
 export const FEE_TIERS = {
