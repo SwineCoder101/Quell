@@ -136,7 +136,7 @@ export const DEPLOYED_TOKENS: Record<string, TokenConfig> = {
     decimals: 18,
   },
   SHIB: {
-    address: "0xea79f42fddd4f60b8690df944aacd2545a34f086" as `0x${string}`,
+    address: "0xee36d6eba0b04ce5fb4c5e7821d80df0bec620b0" as `0x${string}`,
     symbol: "SHIB",
     name: "Shiba Inu",
     decimals: 18,
@@ -187,6 +187,8 @@ const V3_PAIR_SET = new Set([
   // WETH pairs
   "WETH/DAI", "WETH/WBTC", "WETH/LINK", "WETH/UNI", "WETH/AAVE",
   "WETH/ARB", "WETH/OP", "WETH/MKR", "WETH/DOGE",
+  // SHIB pairs (against official USDC & WETH)
+  "SHIB/USDC", "SHIB/WETH",
 ]);
 
 // Build a full adjacency map (both directions) including ETH as alias for WETH
