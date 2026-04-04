@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { TOKEN_LIST, NATIVE_ETH, isPairQuotable, isTokenQuotable, getQuotableCounterparts, type TokenConfig } from "@/lib/token-config";
+import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, type TokenConfig } from "@/lib/token-config";
 import { checkApproval, getQuote, getSwap, getOutputAmount } from "@/lib/uniswap-api";
 import TokenIcon from "@/components/TokenIcon";
 
@@ -14,7 +14,6 @@ interface TokenOption extends TokenConfig {
 }
 
 const TOKEN_OPTIONS: TokenOption[] = [
-  { ...NATIVE_ETH, isNative: true },
   ...TOKEN_LIST.filter((t) => isTokenQuotable(t.symbol)),
 ];
 
@@ -25,8 +24,8 @@ export default function SwapPanel() {
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
 
-  const [tokenIn, setTokenIn] = useState<TokenOption>(TOKEN_OPTIONS[0]);
-  const [tokenOut, setTokenOut] = useState<TokenOption>(TOKEN_OPTIONS.find((t) => t.symbol === "USDC")!);
+  const [tokenIn, setTokenIn] = useState<TokenOption>(TOKEN_OPTIONS.find((t) => t.symbol === "USDC")!);
+  const [tokenOut, setTokenOut] = useState<TokenOption>(TOKEN_OPTIONS.find((t) => t.symbol === "WETH")!);
   const [amountIn, setAmountIn] = useState("");
   const [quoteResponse, setQuoteResponse] = useState<Record<string, unknown> | null>(null);
   const [outputAmount, setOutputAmount] = useState("");

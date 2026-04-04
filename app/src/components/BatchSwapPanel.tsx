@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { useSendCalls } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { TOKEN_LIST, NATIVE_ETH as NATIVE_ETH_CONFIG, isPairQuotable, isTokenQuotable, getQuotableCounterparts, type TokenConfig } from "@/lib/token-config";
+import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, type TokenConfig } from "@/lib/token-config";
 import {
   getQuote,
   getBatchSwap,
@@ -20,8 +20,7 @@ interface TokenOption extends TokenConfig {
 }
 
 const TOKEN_OPTIONS: TokenOption[] = [
-  { ...NATIVE_ETH_CONFIG, isNative: true },
-  ...TOKEN_LIST,
+  ...TOKEN_LIST.filter((t) => isTokenQuotable(t.symbol)),
 ];
 
 interface TradeRow {
@@ -40,8 +39,8 @@ function createTradeRow(): TradeRow {
   const id = `TR${nextTradeId++}`;
   return {
     id,
-    sellToken: TOKEN_OPTIONS[0],
-    buyToken: TOKEN_OPTIONS[2],
+    sellToken: TOKEN_OPTIONS.find((t) => t.symbol === "USDC")!,
+    buyToken: TOKEN_OPTIONS.find((t) => t.symbol === "WETH")!,
     sellAmount: "",
     quote: null,
     outputAmount: "",
