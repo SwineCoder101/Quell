@@ -1,76 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useAccount, usePublicClient } from "wagmi";
-import { formatUnits, erc20Abi } from "viem";
-import { TOKEN_LIST } from "@/lib/token-config";
+import { useTokenBalances } from "@/hooks/useTokenBalances";
 import TokenIcon from "@/components/TokenIcon";
 
-interface TokenBalance {
-  symbol: string;
-  name: string;
-  address: `0x${string}` | "native";
-  decimals: number;
-  balance: bigint;
-  formatted: string;
-}
-
 export default function PortfolioPanel() {
-  const { address, isConnected } = useAccount();
-  const publicClient = usePublicClient();
-
-  const [balances, setBalances] = useState<TokenBalance[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
-  const fetchBalances = useCallback(async () => {
-    if (!address || !publicClient) return;
-    setLoading(true);
-
-    try {
-      const [ethBalance, ...tokenResults] = await Promise.all([
-        publicClient.getBalance({ address }),
-        ...TOKEN_LIST.map((token) =>
-          publicClient.readContract({
-            address: token.address,
-            abi: erc20Abi,
-            functionName: "balanceOf",
-            args: [address],
-          })
-        ),
-      ]);
-
-      const allBalances: TokenBalance[] = [
-        {
-          symbol: "ETH",
-          name: "Ether",
-          address: "native",
-          decimals: 18,
-          balance: ethBalance,
-          formatted: formatUnits(ethBalance, 18),
-        },
-        ...TOKEN_LIST.map((token, i) => ({
-          symbol: token.symbol,
-          name: token.name,
-          address: token.address,
-          decimals: token.decimals,
-          balance: tokenResults[i] as bigint,
-          formatted: formatUnits(tokenResults[i] as bigint, token.decimals),
-        })),
-      ];
-
-      setBalances(allBalances);
-      setLastUpdated(new Date());
-    } catch (err) {
-      console.error("Failed to fetch balances:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [address, publicClient]);
-
-  useEffect(() => {
-    fetchBalances();
-  }, [fetchBalances]);
+  const { balances, loading, lastUpdated, refetch, isConnected } =
+    useTokenBalances();
 
   if (!isConnected) {
     return (
@@ -87,13 +22,13 @@ export default function PortfolioPanel() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-xs text-zinc-500 uppercase tracking-wider">Wallet</p>
-          <p className="text-sm font-mono text-zinc-300">
-            {address?.slice(0, 6)}...{address?.slice(-4)}
+          <p className="text-xs text-zinc-500 uppercase tracking-wider">
+            Wallet
           </p>
+          <p className="text-sm font-mono text-zinc-300">Connected</p>
         </div>
         <button
-          onClick={fetchBalances}
+          onClick={refetch}
           disabled={loading}
           className="text-xs text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-lg px-3 py-1.5 transition disabled:opacity-50"
         >
@@ -152,7 +87,13 @@ export default function PortfolioPanel() {
   );
 }
 
-function TokenRow({ token, dimmed }: { token: TokenBalance; dimmed?: boolean }) {
+function TokenRow({
+  token,
+  dimmed,
+}: {
+  token: { symbol: string; name: string; address: string; formatted: string };
+  dimmed?: boolean;
+}) {
   const displayBalance = formatBalance(token.formatted);
 
   return (
@@ -188,7 +129,7 @@ function TokenRow({ token, dimmed }: { token: TokenBalance; dimmed?: boolean }) 
             rel="noopener noreferrer"
             className="text-[10px] text-zinc-600 hover:text-violet-400 transition"
           >
-            {(token.address as string).slice(0, 6)}...{(token.address as string).slice(-4)} ↗
+            {token.address.slice(0, 6)}...{token.address.slice(-4)} ↗
           </a>
         )}
       </div>
@@ -202,7 +143,8 @@ function formatBalance(formatted: string): string {
   if (num < 0.000001) return "< 0.000001";
   if (num < 1) return num.toPrecision(4);
   if (num < 1000) return num.toFixed(4);
-  if (num < 1_000_000) return num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  if (num < 1_000_000)
+    return num.toLocaleString(undefined, { maximumFractionDigits: 2 });
   if (num < 1_000_000_000) return `${(num / 1_000_000).toFixed(2)}M`;
   return `${(num / 1_000_000_000).toFixed(2)}B`;
 }

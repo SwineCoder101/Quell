@@ -6,6 +6,7 @@ import { parseUnits, formatUnits } from "viem";
 import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, resolveTokenAddress, type TokenConfig } from "@/lib/token-config";
 import { checkApproval, getQuote, getSwap, getOutputAmount } from "@/lib/uniswap-api";
 import TokenIcon from "@/components/TokenIcon";
+import SettleButton from "@/components/SettleButton";
 
 const SEPOLIA_CHAIN_ID = "11155111";
 
@@ -296,6 +297,9 @@ export default function SwapPanel() {
           {error}
         </div>
       )}
+
+      {/* Settle to Arc */}
+      <SettleButton />
     </div>
   );
 }

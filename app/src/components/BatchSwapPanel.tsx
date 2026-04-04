@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { useSendCalls } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, resolveTokenAddress, type TokenConfig } from "@/lib/token-config";
+import type { TradeSuggestion } from "@/lib/strategy-types";
 import {
   getQuote,
   getBatchSwap,
@@ -12,6 +13,7 @@ import {
   type BatchSwapCall,
 } from "@/lib/uniswap-api";
 import TokenIcon from "@/components/TokenIcon";
+import SettleButton from "@/components/SettleButton";
 
 const SEPOLIA_CHAIN_ID = "11155111";
 
@@ -51,7 +53,11 @@ function createTradeRow(): TradeRow {
 
 type BatchStep = "idle" | "quoting" | "quoted" | "executing" | "done" | "error";
 
-export default function BatchSwapPanel() {
+export interface BatchSwapPanelHandle {
+  applyTrades: (suggestions: TradeSuggestion[]) => void;
+}
+
+const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(_props, ref) {
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
   const publicClient = usePublicClient();
@@ -61,6 +67,41 @@ export default function BatchSwapPanel() {
   const [batchStep, setBatchStep] = useState<BatchStep>("idle");
   const [batchError, setBatchError] = useState("");
   const [txId, setTxId] = useState("");
+  const pendingQuote = useRef(false);
+
+  useImperativeHandle(ref, () => ({
+    applyTrades(suggestions: TradeSuggestion[]) {
+      const newTrades = suggestions
+        .map((s) => {
+          const sell = TOKEN_OPTIONS.find((t) => t.symbol === s.sellToken || (s.sellToken === "ETH" && t.symbol === "WETH"));
+          const buy = TOKEN_OPTIONS.find((t) => t.symbol === s.buyToken || (s.buyToken === "ETH" && t.symbol === "WETH"));
+          if (!sell || !buy) return null;
+          if (!isPairQuotable(sell.symbol, buy.symbol)) return null;
+          const row = createTradeRow();
+          row.sellToken = sell;
+          row.buyToken = buy;
+          row.sellAmount = s.sellAmount;
+          return row;
+        })
+        .filter((t): t is TradeRow => t !== null);
+
+      if (newTrades.length > 0) {
+        setTrades(newTrades);
+        setBatchStep("idle");
+        setBatchError("");
+        setTxId("");
+        pendingQuote.current = true;
+      }
+    },
+  }));
+
+  // Auto-quote after applying AI strategy
+  useEffect(() => {
+    if (pendingQuote.current && batchStep === "idle" && trades.some((t) => t.sellAmount && parseFloat(t.sellAmount) > 0)) {
+      pendingQuote.current = false;
+      handleQuoteAll();
+    }
+  });
 
   const updateTrade = useCallback((id: string, updates: Partial<TradeRow>) => {
     setTrades((prev) => prev.map((t) => (t.id === id ? { ...t, ...updates } : t)));
@@ -439,9 +480,14 @@ export default function BatchSwapPanel() {
           {batchError}
         </div>
       )}
+
+      {/* Settle to Arc */}
+      <SettleButton />
     </div>
   );
-}
+});
+
+export default BatchSwapPanel;
 
 // ── PnL Summary Component ──
 function BatchPnL({ trades }: { trades: TradeRow[] }) {
