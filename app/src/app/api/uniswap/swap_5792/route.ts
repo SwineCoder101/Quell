@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing UNISWAP_API_KEY" }, { status: 500 });
   }
 
-  const res = await fetch(`${UNISWAP_API}/check_approval`, {
+  const res = await fetch(`${UNISWAP_API}/swap_5792`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -6,7 +6,7 @@ import { parseUnits, formatUnits } from "viem";
 import { TOKENS } from "@/lib/contracts";
 import { checkApproval, getQuote, getSwap, getOutputAmount } from "@/lib/uniswap-api";
 
-const BASE_SEPOLIA_CHAIN_ID = "84532";
+const BASE_CHAIN_ID = "8453";
 
 // ETH represented as a special address for the API
 const NATIVE_ETH = "0x0000000000000000000000000000000000000000";
@@ -62,8 +62,8 @@ export default function SwapPanel() {
         swapper: address,
         tokenIn: tokenIn.address,
         tokenOut: tokenOut.address,
-        tokenInChainId: BASE_SEPOLIA_CHAIN_ID,
-        tokenOutChainId: BASE_SEPOLIA_CHAIN_ID,
+        tokenInChainId: BASE_CHAIN_ID,
+        tokenOutChainId: BASE_CHAIN_ID,
         amount: rawAmount,
         type: "EXACT_INPUT",
         slippageTolerance: 0.5,
@@ -91,7 +91,7 @@ export default function SwapPanel() {
           walletAddress: address,
           token: tokenIn.address,
           amount: parseUnits(amountIn, tokenIn.decimals).toString(),
-          chainId: 84532,
+          chainId: 8453,
         });
 
         if (approvalRes.approval) {
@@ -284,7 +284,7 @@ export default function SwapPanel() {
           <div className="text-green-400 font-semibold">Swap successful!</div>
           {txHash && (
             <a
-              href={`https://sepolia.basescan.org/tx/${txHash}`}
+              href={`https://basescan.org/tx/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-violet-400 hover:underline text-sm"
