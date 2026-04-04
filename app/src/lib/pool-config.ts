@@ -173,6 +173,16 @@ export const V3_POOLS: PoolConfig[] = [
     hooks: "0x0000000000000000000000000000000000000000" as `0x${string}`,
     poolAddress: "0x62A0aDe98e045F78d25267656f797142F6c470f4" as `0x${string}`,
   },
+  {
+    version: "v3",
+    pair: "USDC/SHIB",
+    token0: { address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as `0x${string}`, symbol: "USDC", decimals: 6 },
+    token1: { address: "0xea79f42fddd4f60b8690df944aacd2545a34f086" as `0x${string}`, symbol: "SHIB", decimals: 18 },
+    fee: 10000,
+    tickSpacing: 200,
+    hooks: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+    poolAddress: "0x0eAc7bb1F0e613A16863093Edb8Be89C9a95E97D" as `0x${string}`,
+  },
 ];
 
 export const V4_POOLS: PoolConfig[] = [
@@ -442,6 +452,15 @@ export const V4_POOLS: PoolConfig[] = [
     pair: "USDC/PEPE",
     token0: { address: "0x12e2b23b99429c7738ec3dc4682ddc437a3a3fd5" as `0x${string}`, symbol: "PEPE", decimals: 18 },
     token1: { address: "0x46ea40b1190ef2c06e7660b0fa07f28a76658336" as `0x${string}`, symbol: "USDC", decimals: 6 },
+    fee: 10000,
+    tickSpacing: 200,
+    hooks: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+  },
+  {
+    version: "v4",
+    pair: "USDC/SHIB",
+    token0: { address: "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as `0x${string}`, symbol: "USDC", decimals: 6 },
+    token1: { address: "0xea79f42fddd4f60b8690df944aacd2545a34f086" as `0x${string}`, symbol: "SHIB", decimals: 18 },
     fee: 10000,
     tickSpacing: 200,
     hooks: "0x0000000000000000000000000000000000000000" as `0x${string}`,

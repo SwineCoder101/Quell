@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, type TokenConfig } from "@/lib/token-config";
+import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, resolveTokenAddress, type TokenConfig } from "@/lib/token-config";
 import { checkApproval, getQuote, getSwap, getOutputAmount } from "@/lib/uniswap-api";
 import TokenIcon from "@/components/TokenIcon";
 
@@ -53,8 +53,8 @@ export default function SwapPanel() {
 
       const quote = await getQuote({
         swapper: address,
-        tokenIn: tokenIn.address,
-        tokenOut: tokenOut.address,
+        tokenIn: resolveTokenAddress(tokenIn, tokenOut.symbol),
+        tokenOut: resolveTokenAddress(tokenOut, tokenIn.symbol),
         tokenInChainId: SEPOLIA_CHAIN_ID,
         tokenOutChainId: SEPOLIA_CHAIN_ID,
         amount: rawAmount,
@@ -81,7 +81,7 @@ export default function SwapPanel() {
         setStep("approving");
         const approvalRes = await checkApproval({
           walletAddress: address,
-          token: tokenIn.address,
+          token: resolveTokenAddress(tokenIn, tokenOut.symbol),
           amount: parseUnits(amountIn, tokenIn.decimals).toString(),
           chainId: 11155111,
         });

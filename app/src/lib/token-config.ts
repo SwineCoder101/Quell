@@ -179,6 +179,21 @@ export function getTokenLogoURI(symbol: string): string | undefined {
   return LOGOS[symbol];
 }
 
+// Official Sepolia USDC (Circle) — used for SHIB pairs only
+export const OFFICIAL_USDC_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238" as `0x${string}`;
+
+/**
+ * Resolve the on-chain token address for a swap pair.
+ * When SHIB is the counterpart, USDC maps to the official Circle address;
+ * for all other pairs USDC uses the mocked testnet address.
+ */
+export function resolveTokenAddress(token: TokenConfig, counterpartSymbol: string): `0x${string}` {
+  if (token.symbol === "USDC" && counterpartSymbol === "SHIB") {
+    return OFFICIAL_USDC_ADDRESS;
+  }
+  return token.address;
+}
+
 // Direct V3 pool pairs that the Uniswap Trading API can quote on Sepolia.
 // Derived from the actual V3 pools we deployed.
 const V3_PAIR_SET = new Set([

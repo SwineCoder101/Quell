@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { useSendCalls } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, type TokenConfig } from "@/lib/token-config";
+import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, resolveTokenAddress, type TokenConfig } from "@/lib/token-config";
 import {
   getQuote,
   getBatchSwap,
@@ -122,8 +122,8 @@ export default function BatchSwapPanel() {
 
           const quote = await getQuote({
             swapper: address,
-            tokenIn: trade.sellToken.address,
-            tokenOut: trade.buyToken.address,
+            tokenIn: resolveTokenAddress(trade.sellToken, trade.buyToken.symbol),
+            tokenOut: resolveTokenAddress(trade.buyToken, trade.sellToken.symbol),
             tokenInChainId: SEPOLIA_CHAIN_ID,
             tokenOutChainId: SEPOLIA_CHAIN_ID,
             amount: rawAmount,
