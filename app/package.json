@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "transfer": "npx tsx --env-file=.env.local scripts/erc20-transfer.ts"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^5.6.1",
@@ -15,11 +16,12 @@
     "@uniswap/sdk-core": "^7.13.0",
     "@uniswap/v3-periphery": "^1.4.4",
     "@uniswap/v3-sdk": "^3.30.0",
+    "@unlink-xyz/sdk": "^0.0.2-canary.0",
     "ethers": "^6.16.0",
     "next": "16.2.2",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "viem": "^2.47.6",
+    "viem": "^2.47.10",
     "wagmi": "^2.14.0"
   },
   "devDependencies": {
