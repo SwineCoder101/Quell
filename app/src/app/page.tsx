@@ -1,25 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import DynamicConnectButton from "@/components/DynamicConnectButton";
 import SwapPanel from "@/components/SwapPanel";
 import BatchSwapPanel from "@/components/BatchSwapPanel";
 import PortfolioPanel from "@/components/PortfolioPanel";
 import PoolsDashboard from "@/components/PoolsDashboard";
+import WalletManager from "@/components/WalletManager";
 
-type Tab = "portfolio" | "pools" | "swap" | "batch";
+type Tab = "wallet" | "portfolio" | "pools" | "swap" | "batch";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<Tab>("portfolio");
+  const [activeTab, setActiveTab] = useState<Tab>("wallet");
 
   const maxWidth =
     activeTab === "batch" || activeTab === "pools"
       ? "w-full max-w-4xl"
-      : activeTab === "portfolio"
+      : activeTab === "portfolio" || activeTab === "wallet"
         ? "w-full max-w-lg"
         : "w-full max-w-md";
 
   const tabs: { key: Tab; label: string }[] = [
+    { key: "wallet", label: "Wallet" },
     { key: "portfolio", label: "Portfolio" },
     { key: "pools", label: "Pools" },
     { key: "swap", label: "Swap" },
@@ -35,7 +37,7 @@ export default function Home() {
           <span className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded-full">
             Sepolia
           </span>
-          <ConnectButton />
+          <DynamicConnectButton />
         </div>
       </header>
 
@@ -60,6 +62,7 @@ export default function Home() {
               ))}
             </div>
 
+            {activeTab === "wallet" && <WalletManager />}
             {activeTab === "portfolio" && <PortfolioPanel />}
             {activeTab === "pools" && <PoolsDashboard />}
             {activeTab === "swap" && <SwapPanel />}
