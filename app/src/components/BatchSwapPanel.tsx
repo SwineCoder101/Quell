@@ -2,7 +2,7 @@
 
 import { useState, useCallback, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
-import { useSendCalls } from "wagmi";
+import { useSendCalls, useCallsStatus } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
 import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, resolveTokenAddress, type TokenConfig } from "@/lib/token-config";
 import type { TradeSuggestion } from "@/lib/strategy-types";
@@ -13,6 +13,7 @@ import {
   type BatchSwapCall,
 } from "@/lib/uniswap-api";
 import TokenIcon from "@/components/TokenIcon";
+import { toast } from "sonner";
 import SettleButton from "@/components/SettleButton";
 
 const SEPOLIA_CHAIN_ID = "11155111";
@@ -67,7 +68,32 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
   const [batchStep, setBatchStep] = useState<BatchStep>("idle");
   const [batchError, setBatchError] = useState("");
   const [txId, setTxId] = useState("");
+  const toastShownRef = useRef(false);
   const pendingQuote = useRef(false);
+
+  const { data: callsStatus } = useCallsStatus({
+    id: txId || undefined as unknown as string,
+    query: { enabled: !!txId, refetchInterval: 1000 },
+  });
+
+  useEffect(() => {
+    if (
+      callsStatus?.status === "success" &&
+      callsStatus.receipts?.length &&
+      !toastShownRef.current
+    ) {
+      toastShownRef.current = true;
+      const txHash = callsStatus.receipts[0].transactionHash;
+      toast.success("Batch confirmed!", {
+        description: "View transaction on Etherscan",
+        action: {
+          label: "Open",
+          onClick: () => window.open(`https://sepolia.etherscan.io/tx/${txHash}`, "_blank"),
+        },
+        duration: 10000,
+      });
+    }
+  }, [callsStatus]);
 
   useImperativeHandle(ref, () => ({
     applyTrades(suggestions: TradeSuggestion[]) {
@@ -224,6 +250,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
         })),
       });
 
+      toastShownRef.current = false;
       setTxId(result.id);
       setBatchStep("done");
     } catch (err) {
