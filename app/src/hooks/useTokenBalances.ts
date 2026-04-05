@@ -14,8 +14,9 @@ export interface TokenBalance {
   formatted: string;
 }
 
-export function useTokenBalances() {
-  const { address, isConnected } = useAccount();
+export function useTokenBalances(opts?: { addressOverride?: `0x${string}` }) {
+  const { address: wagmiAddress, isConnected } = useAccount();
+  const address = opts?.addressOverride || wagmiAddress;
   const publicClient = usePublicClient();
 
   const [balances, setBalances] = useState<TokenBalance[]>([]);

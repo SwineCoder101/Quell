@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: [
+    "@dynamic-labs-wallet/node-evm",
+    "@dynamic-labs-wallet/node",
+    "@dynamic-labs-wallet/core",
+    "@evervault/wasm-attestation-bindings",
+  ],
 };
 
 export default nextConfig;

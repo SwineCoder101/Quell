@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
-import { useAccount, useWalletClient, usePublicClient } from "wagmi";
-import { useSendCalls, useCallsStatus } from "wagmi";
+import { useAccount } from "wagmi";
+import { useEmbeddedWalletAddress } from "@/hooks/useEmbeddedWalletAddress";
 import { parseUnits, formatUnits } from "viem";
 import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, resolveTokenAddress, type TokenConfig } from "@/lib/token-config";
 import type { TradeSuggestion } from "@/lib/strategy-types";
@@ -59,41 +59,15 @@ export interface BatchSwapPanelHandle {
 }
 
 const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(_props, ref) {
-  const { address, isConnected } = useAccount();
-  const { data: walletClient } = useWalletClient();
-  const publicClient = usePublicClient();
-  const { sendCallsAsync } = useSendCalls();
+  const { isConnected } = useAccount();
+  const embeddedWalletAddress = useEmbeddedWalletAddress();
+  const address = embeddedWalletAddress;
 
   const [trades, setTrades] = useState<TradeRow[]>(() => [createTradeRow()]);
   const [batchStep, setBatchStep] = useState<BatchStep>("idle");
   const [batchError, setBatchError] = useState("");
   const [txId, setTxId] = useState("");
-  const toastShownRef = useRef(false);
   const pendingQuote = useRef(false);
-
-  const { data: callsStatus } = useCallsStatus({
-    id: txId || undefined as unknown as string,
-    query: { enabled: !!txId, refetchInterval: 1000 },
-  });
-
-  useEffect(() => {
-    if (
-      callsStatus?.status === "success" &&
-      callsStatus.receipts?.length &&
-      !toastShownRef.current
-    ) {
-      toastShownRef.current = true;
-      const txHash = callsStatus.receipts[0].transactionHash;
-      toast.success("Batch confirmed!", {
-        description: "View transaction on Etherscan",
-        action: {
-          label: "Open",
-          onClick: () => window.open(`https://sepolia.etherscan.io/tx/${txHash}`, "_blank"),
-        },
-        duration: 10000,
-      });
-    }
-  }, [callsStatus]);
 
   useImperativeHandle(ref, () => ({
     applyTrades(suggestions: TradeSuggestion[]) {
@@ -220,7 +194,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
   }, [address, trades, updateTrade]);
 
   const handleExecuteBatch = useCallback(async () => {
-    if (!address || !walletClient || !publicClient) return;
+    if (!address) return;
 
     const quotedTrades = trades.filter((t) => t.status === "quoted" && t.quote);
     if (quotedTrades.length === 0) return;
@@ -231,8 +205,6 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
     try {
       const allCalls: BatchSwapCall[] = [];
 
-      // For each trade, call swap_5792 with { quote, permitData }.
-      // No signature needed — EIP-5792 batches approval + swap into calls the wallet executes together.
       for (const trade of quotedTrades) {
         const quoteResponse = trade.quote!;
         const quote = quoteResponse.quote as Record<string, unknown>;
@@ -242,22 +214,43 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
         allCalls.push(...result.calls);
       }
 
-      const result = await sendCallsAsync({
-        calls: allCalls.map((call) => ({
-          to: call.to as `0x${string}`,
-          data: call.data as `0x${string}`,
-          value: BigInt(call.value || "0"),
-        })),
+      // Execute server-side via Dynamic embedded wallet
+      const res = await fetch("/api/execute-batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          walletAddress: address,
+          calls: allCalls.map((call) => ({
+            to: call.to,
+            data: call.data,
+            value: call.value || "0",
+          })),
+        }),
       });
 
-      toastShownRef.current = false;
-      setTxId(result.id);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Batch execution failed");
+
+      setTxId(data.txHashes[0] || "");
       setBatchStep("done");
+
+      toast.success("Batch swap confirmed!", {
+        description: `${data.txHashes.length} transaction(s) executed`,
+        action: {
+          label: "View",
+          onClick: () =>
+            window.open(
+              `https://sepolia.etherscan.io/tx/${data.txHashes[0]}`,
+              "_blank"
+            ),
+        },
+        duration: 10000,
+      });
     } catch (err) {
       setBatchError(err instanceof Error ? err.message : "Batch execution failed");
       setBatchStep("error");
     }
-  }, [address, walletClient, publicClient, trades, sendCallsAsync]);
+  }, [address, trades]);
 
   if (!isConnected) {
     return (
@@ -442,7 +435,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
             disabled
             className="flex-1 bg-cex-surface border border-cex-border text-cex-secondary font-semibold py-3 rounded text-sm animate-pulse"
           >
-            Confirm batch in wallet...
+            Executing batch...
           </button>
         ) : null}
       </div>
