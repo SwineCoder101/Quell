@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; }
+  body { width: 640px; height: 360px; overflow: hidden; }
+  canvas { display: block; width: 640px; height: 360px; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+</head>
+<body>
+<canvas id="cover" width="1920" height="1080"></canvas>
+<script>
+const canvas = document.getElementById('cover');
+const ctx = canvas.getContext('2d');
+const W = 1920;
+const H = 1080;
+
+function draw() {
+  // ── Sky gradient — sunset dusk ──
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#1a1520');
+  sky.addColorStop(0.3, '#2d1f30');
+  sky.addColorStop(0.5, '#6b3a3a');
+  sky.addColorStop(0.65, '#c46840');
+  sky.addColorStop(0.75, '#e8a050');
+  sky.addColorStop(0.82, '#f5cc80');
+  sky.addColorStop(0.88, '#fae8c8');
+  sky.addColorStop(1, '#f0d8b0');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Stars in the dark upper sky ──
+  for (let i = 0; i < 80; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H * 0.35;
+    const r = Math.random() * 1.2 + 0.3;
+    const alpha = Math.random() * 0.6 + 0.1;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 240, 220, ${alpha})`;
+    ctx.fill();
+  }
+
+  // ── Sun glow ──
+  const sun = ctx.createRadialGradient(W * 0.5, H * 0.72, 0, W * 0.5, H * 0.72, 300);
+  sun.addColorStop(0, 'rgba(255, 220, 150, 0.5)');
+  sun.addColorStop(0.3, 'rgba(255, 180, 100, 0.2)');
+  sun.addColorStop(1, 'transparent');
+  ctx.fillStyle = sun;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Sun disc ──
+  const sunDisc = ctx.createRadialGradient(W * 0.5, H * 0.73, 0, W * 0.5, H * 0.73, 60);
+  sunDisc.addColorStop(0, 'rgba(255, 240, 200, 0.9)');
+  sunDisc.addColorStop(0.7, 'rgba(255, 200, 120, 0.4)');
+  sunDisc.addColorStop(1, 'transparent');
+  ctx.fillStyle = sunDisc;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Water / sand line ──
+  const waterY = H * 0.84;
+
+  // Water reflection
+  const water = ctx.createLinearGradient(0, waterY, 0, H);
+  water.addColorStop(0, '#e8c898');
+  water.addColorStop(0.3, '#d4b080');
+  water.addColorStop(1, '#c8a470');
+  ctx.fillStyle = water;
+  ctx.fillRect(0, waterY, W, H - waterY);
+
+  // Sun reflection on water
+  const refl = ctx.createRadialGradient(W * 0.5, waterY, 0, W * 0.5, waterY + 80, 200);
+  refl.addColorStop(0, 'rgba(255, 220, 160, 0.35)');
+  refl.addColorStop(1, 'transparent');
+  ctx.fillStyle = refl;
+  ctx.fillRect(0, waterY, W, H - waterY);
+
+  // Subtle water ripples
+  ctx.strokeStyle = 'rgba(255, 240, 200, 0.08)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 12; i++) {
+    const y = waterY + 10 + i * 12;
+    const offset = Math.sin(i * 0.8) * 30;
+    ctx.beginPath();
+    ctx.moveTo(W * 0.2 + offset, y);
+    ctx.bezierCurveTo(W * 0.35, y - 2, W * 0.65, y + 2, W * 0.8 + offset, y);
+    ctx.stroke();
+  }
+
+  // ── Beach umbrella — centered, silhouette style ──
+  const umbrellaScale = 10;
+  const ux = W * 0.5 - 16 * umbrellaScale;
+  const uy = H * 0.35;
+
+  ctx.save();
+  ctx.translate(ux, uy);
+  ctx.scale(umbrellaScale, umbrellaScale);
+
+  // Canopy left — warm silhouette
+  const gradL = ctx.createLinearGradient(4, 2, 16, 16);
+  gradL.addColorStop(0, '#e85d4a');
+  gradL.addColorStop(1, '#eda63a');
+  ctx.fillStyle = gradL;
+  ctx.globalAlpha = 0.95;
+  ctx.beginPath();
+  ctx.moveTo(16, 3);
+  ctx.bezierCurveTo(9.4, 3, 4, 8.2, 4, 16);
+  ctx.lineTo(16, 16);
+  ctx.closePath();
+  ctx.fill();
+
+  // Canopy right
+  const gradR = ctx.createLinearGradient(16, 2, 28, 16);
+  gradR.addColorStop(0, '#eda63a');
+  gradR.addColorStop(1, '#fcd9a8');
+  ctx.fillStyle = gradR;
+  ctx.beginPath();
+  ctx.moveTo(16, 3);
+  ctx.bezierCurveTo(22.6, 3, 28, 8.2, 28, 16);
+  ctx.lineTo(16, 16);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.globalAlpha = 1;
+
+  // Pole
+  ctx.strokeStyle = 'rgba(60, 40, 20, 0.6)';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(16, 4);
+  ctx.lineTo(16, 32);
+  ctx.stroke();
+
+  // Hook
+  ctx.beginPath();
+  ctx.moveTo(16, 32);
+  ctx.bezierCurveTo(16, 29, 18.5, 28, 20, 28);
+  ctx.stroke();
+
+  ctx.restore();
+
+  // ── Title ──
+  ctx.font = 'italic 130px "Instrument Serif", Georgia, serif';
+  ctx.fillStyle = 'rgba(255, 248, 235, 0.95)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Text shadow
+  ctx.save();
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 4;
+  ctx.fillText('Tranquille', W * 0.5, H * 0.2);
+  ctx.restore();
+
+  // ── Tagline ──
+  ctx.font = 'italic 32px "Instrument Serif", Georgia, serif';
+  ctx.fillStyle = 'rgba(255, 230, 200, 0.6)';
+  ctx.fillText('AI-powered batch trading for DeFi', W * 0.5, H * 0.29);
+
+  // ── Tech stack ──
+  ctx.font = '16px system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(180, 150, 110, 0.5)';
+  ctx.textAlign = 'center';
+  ctx.fillText('Uniswap V3/V4  ·  Circle CCTP  ·  Claude AI  ·  EIP-5792', W * 0.5, H * 0.96);
+
+  // ── ETH Global badge — top right ──
+  ctx.font = '600 12px system-ui, sans-serif';
+  ctx.letterSpacing = '2px';
+  const badgeText = 'ETH GLOBAL CANNES 2026';
+  const bw = ctx.measureText(badgeText).width + 30;
+  const bx = W - bw - 50;
+  const by = 40;
+
+  ctx.fillStyle = 'rgba(255, 240, 220, 0.08)';
+  ctx.strokeStyle = 'rgba(255, 240, 220, 0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw, 28, 14);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255, 240, 220, 0.6)';
+  ctx.textAlign = 'center';
+  ctx.fillText(badgeText, bx + bw / 2, by + 15);
+  ctx.letterSpacing = '0px';
+
+  // ── Grain overlay ──
+  for (let i = 0; i < 30000; i++) {
+    const x = Math.random() * W;
+    const y = Math.random() * H;
+    const v = Math.random() > 0.5 ? 255 : 0;
+    ctx.fillStyle = `rgba(${v}, ${v}, ${v}, ${Math.random() * 0.02})`;
+    ctx.fillRect(x, y, 1, 1);
+  }
+}
+
+document.fonts.ready.then(() => setTimeout(draw, 300));
+</script>
+</body>
+</html>
