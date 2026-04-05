@@ -11,6 +11,45 @@ import { useTokenBalances } from "@/hooks/useTokenBalances";
 
 type Tab = "portfolio" | "pools" | "swap" | "batch";
 
+const NAV_ITEMS: { key: Tab; label: string; icon: React.ReactNode }[] = [
+  {
+    key: "portfolio",
+    label: "Portfolio",
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    ),
+  },
+  {
+    key: "pools",
+    label: "Pools",
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+  },
+  {
+    key: "swap",
+    label: "Swap",
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+      </svg>
+    ),
+  },
+  {
+    key: "batch",
+    label: "Batch Swap",
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+      </svg>
+    ),
+  },
+];
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("portfolio");
   const [chatOpen, setChatOpen] = useState(true);
@@ -22,72 +61,84 @@ export default function Home() {
     formatted: b.formatted,
   }));
 
-  const maxWidth =
-    activeTab === "batch"
-      ? "w-full max-w-7xl"
-      : activeTab === "pools"
-        ? "w-full max-w-4xl"
-        : activeTab === "portfolio"
-          ? "w-full max-w-lg"
-          : "w-full max-w-md";
-
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "portfolio", label: "Portfolio" },
-    { key: "pools", label: "Pools" },
-    { key: "swap", label: "Swap" },
-    { key: "batch", label: "Batch Swap" },
-  ];
-
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 border-b border-zinc-800">
-        <h1 className="text-xl font-bold tracking-tight">Quell</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-xs bg-blue-600/20 text-blue-400 px-2 py-1 rounded-full">
-            Sepolia
-          </span>
-          <ConnectButton />
+    <div className="flex min-h-screen">
+      {/* Left Sidebar */}
+      <aside className="w-56 flex-shrink-0 border-r border-cex-border bg-cex-surface flex flex-col">
+        {/* Logo */}
+        <div className="flex items-center gap-2 px-5 h-14 border-b border-cex-border">
+          <div className="w-6 h-6 rounded bg-cex-gold flex items-center justify-center">
+            <span className="text-[#0b0e11] font-black text-xs">Q</span>
+          </div>
+          <span className="text-base font-bold text-foreground tracking-tight">Quell</span>
         </div>
-      </header>
 
-      {/* Main */}
-      <main className="flex-1 flex items-start justify-center pt-16 px-4">
-        <div className={maxWidth}>
+        {/* Navigation */}
+        <nav className="flex-1 py-3 px-3 space-y-0.5">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setActiveTab(item.key)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm transition ${
+                activeTab === item.key
+                  ? "bg-cex-gold/10 text-cex-gold font-medium"
+                  : "text-cex-secondary hover:text-foreground hover:bg-cex-surface-hover"
+              }`}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Sidebar footer */}
+        <div className="px-4 py-3 border-t border-cex-border">
+          <div className="text-[10px] text-cex-tertiary">
+            Powered by Uniswap V3 + V4
+          </div>
+          <div className="text-[10px] text-cex-tertiary mt-0.5">Sepolia Testnet</div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header Bar */}
+        <header className="flex items-center justify-between px-6 h-14 border-b border-cex-border bg-cex-surface">
+          <div className="flex items-center gap-4">
+            <h2 className="text-sm font-semibold text-foreground">
+              {NAV_ITEMS.find((n) => n.key === activeTab)?.label}
+            </h2>
+            <span className="text-[10px] bg-cex-gold/15 text-cex-gold px-2 py-0.5 rounded font-medium">
+              Sepolia
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            {activeTab === "batch" && (
+              <button
+                onClick={() => setChatOpen(!chatOpen)}
+                className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded transition ${
+                  chatOpen
+                    ? "bg-cex-gold/10 text-cex-gold"
+                    : "text-cex-secondary hover:text-foreground bg-cex-surface-hover"
+                }`}
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-cex-gold" />
+                Agent
+              </button>
+            )}
+            <ConnectButton />
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-auto">
           {activeTab === "batch" ? (
-            <div className="flex gap-4 items-start">
-              {/* Batch panel */}
-              <div className="flex-1 min-w-0">
-                <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-2xl">
-                  <div className="flex gap-1 mb-4 bg-zinc-800 rounded-xl p-1">
-                    {tabs.map((tab) => (
-                      <button
-                        key={tab.key}
-                        onClick={() => setActiveTab(tab.key)}
-                        className={`flex-1 py-2 text-sm font-medium rounded-lg transition ${
-                          activeTab === tab.key
-                            ? "bg-zinc-700 text-white"
-                            : "text-zinc-400 hover:text-zinc-300"
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                  <BatchSwapPanel ref={batchRef} />
-                </div>
+            <div className="flex h-full">
+              <div className="flex-1 min-w-0 p-6 overflow-auto">
+                <BatchSwapPanel ref={batchRef} />
               </div>
-
-              {/* Strategy chat sidebar */}
-              {chatOpen ? (
-                <div className="w-[360px] flex-shrink-0 relative hidden lg:block">
-                  <button
-                    onClick={() => setChatOpen(false)}
-                    className="absolute -left-3 top-3 z-10 bg-zinc-800 border border-zinc-700 rounded-full w-6 h-6 flex items-center justify-center text-zinc-400 hover:text-white transition text-xs"
-                    title="Hide chat"
-                  >
-                    ×
-                  </button>
+              {chatOpen && (
+                <div className="w-[360px] flex-shrink-0 border-l border-cex-border hidden lg:block">
                   <StrategyChat
                     balances={chatBalances}
                     onApplyStrategy={(trades) =>
@@ -95,45 +146,24 @@ export default function Home() {
                     }
                   />
                 </div>
-              ) : (
-                <button
-                  onClick={() => setChatOpen(true)}
-                  className="flex-shrink-0 bg-zinc-900 border border-zinc-800 rounded-2xl px-3 py-3 text-zinc-400 hover:text-white transition hidden lg:flex items-center gap-2"
-                  title="Open strategy agent"
-                >
-                  <div className="w-2 h-2 rounded-full bg-violet-500" />
-                  <span className="text-xs font-medium">Agent</span>
-                </button>
               )}
             </div>
           ) : (
-            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-2xl">
-              <div className="flex gap-1 mb-4 bg-zinc-800 rounded-xl p-1">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition ${
-                      activeTab === tab.key
-                        ? "bg-zinc-700 text-white"
-                        : "text-zinc-400 hover:text-zinc-300"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
+            <div className="p-6">
               {activeTab === "portfolio" && <PortfolioPanel />}
               {activeTab === "pools" && <PoolsDashboard />}
-              {activeTab === "swap" && <SwapPanel />}
+              {activeTab === "swap" && (
+                <div className="flex items-start justify-center min-h-[calc(100vh-8rem)]">
+                  <div className="w-full max-w-xl pt-8">
+                    <SwapPanel />
+                  </div>
+                </div>
+              )}
             </div>
           )}
-          <p className="text-center text-xs text-zinc-600 mt-4">
-            Powered by Uniswap V3 + V4 on Sepolia
-          </p>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
+

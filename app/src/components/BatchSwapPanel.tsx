@@ -95,7 +95,6 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
     },
   }));
 
-  // Auto-quote after applying AI strategy
   useEffect(() => {
     if (pendingQuote.current && batchStep === "idle" && trades.some((t) => t.sellAmount && parseFloat(t.sellAmount) > 0)) {
       pendingQuote.current = false;
@@ -145,21 +144,19 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
       return;
     }
 
-    // Mark all valid trades as quoting
     for (const t of validTrades) {
       updateTrade(t.id, { status: "quoting", quote: null, outputAmount: "", error: "" });
     }
 
     let allQuoted = true;
 
-    // Fetch quotes in parallel
-    await Promise.all(
-      validTrades.map(async (trade) => {
-        try {
-          const rawAmount = parseUnits(
-            trade.sellAmount,
-            trade.sellToken.decimals
-          ).toString();
+    // Quote sequentially with a small delay to avoid rate limits
+    for (const trade of validTrades) {
+      try {
+        const rawAmount = parseUnits(
+          trade.sellAmount,
+          trade.sellToken.decimals
+        ).toString();
 
           const quote = await getQuote({
             swapper: address,
@@ -172,24 +169,28 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
             slippageTolerance: 0.5,
           });
 
-          const outAmt = getOutputAmount(quote);
-          updateTrade(trade.id, {
-            quote,
-            outputAmount: formatUnits(BigInt(outAmt), trade.buyToken.decimals),
-            status: "quoted",
-          });
-        } catch (err) {
-          allQuoted = false;
-          updateTrade(trade.id, {
-            status: "error",
-            error: err instanceof Error ? err.message : "Quote failed",
-          });
+        const outAmt = getOutputAmount(quote);
+        updateTrade(trade.id, {
+          quote,
+          outputAmount: formatUnits(BigInt(outAmt), trade.buyToken.decimals),
+          status: "quoted",
+        });
+
+        // Small delay between quotes to avoid 429 rate limits
+        if (validTrades.indexOf(trade) < validTrades.length - 1) {
+          await new Promise((r) => setTimeout(r, 200));
         }
-      })
-    );
+      } catch (err) {
+        allQuoted = false;
+        updateTrade(trade.id, {
+          status: "error",
+          error: err instanceof Error ? err.message : "Quote failed",
+        });
+      }
+    }
 
     setBatchStep(allQuoted ? "quoted" : "error");
-    if (!allQuoted) setBatchError("Some quotes failed — fix errors and retry");
+    if (!allQuoted) setBatchError("Some quotes failed — check errors below");
   }, [address, trades, updateTrade]);
 
   const handleExecuteBatch = useCallback(async () => {
@@ -202,54 +203,19 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
     setBatchError("");
 
     try {
-      // Get EIP-5792 calls for each quoted trade
       const allCalls: BatchSwapCall[] = [];
 
-      const batchResults = await Promise.all(
-        quotedTrades.map(async (trade) => {
-          const quoteResponse = trade.quote!;
-          // swap_5792 expects the inner quote object, not the full response
-          const innerQuote = quoteResponse.quote as Record<string, unknown>;
+      // For each trade, call swap_5792 with { quote, permitData }.
+      // No signature needed — EIP-5792 batches approval + swap into calls the wallet executes together.
+      for (const trade of quotedTrades) {
+        const quoteResponse = trade.quote!;
+        const quote = quoteResponse.quote as Record<string, unknown>;
+        const permitData = quoteResponse.permitData as Record<string, unknown> | null;
 
-          const params: Record<string, unknown> = {
-            quote: innerQuote,
-            urgency: "urgent",
-          };
-
-          // Sign and include permitData if present
-          if (quoteResponse.permitData) {
-            const permitData = quoteResponse.permitData as Record<string, unknown>;
-            const signature = await walletClient.signTypedData({
-              domain: permitData.domain as Record<string, unknown>,
-              types: permitData.types as Record<
-                string,
-                Array<{ name: string; type: string }>
-              >,
-              primaryType: Object.keys(
-                permitData.types as Record<string, unknown>
-              ).find((k) => k !== "EIP712Domain") as string,
-              message: permitData.values as Record<string, unknown>,
-            });
-
-            params.permitData = {
-              ...(permitData.values as Record<string, unknown>),
-              signature,
-            };
-          }
-
-          return getBatchSwap({
-            quote: params.quote as Record<string, unknown>,
-            permitData: params.permitData as Record<string, unknown> | undefined,
-            urgency: "urgent",
-          });
-        })
-      );
-
-      for (const result of batchResults) {
+        const result = await getBatchSwap(quote, permitData, "urgent");
         allCalls.push(...result.calls);
       }
 
-      // Execute all calls as a single EIP-5792 batch
       const result = await sendCallsAsync({
         calls: allCalls.map((call) => ({
           to: call.to as `0x${string}`,
@@ -268,16 +234,16 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
 
   if (!isConnected) {
     return (
-      <div className="text-center text-zinc-400 py-12">
+      <div className="text-center text-cex-secondary py-12">
         Connect your wallet to start batch swapping
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      {/* Header row */}
-      <div className="hidden sm:grid grid-cols-[60px_1fr_1fr_1fr_1fr_40px] gap-2 px-2 text-xs text-zinc-500 uppercase tracking-wider">
+    <div className="space-y-3">
+      {/* Table header */}
+      <div className="hidden sm:grid grid-cols-[60px_1fr_1fr_1fr_1fr_36px] gap-2 px-3 py-2 text-[10px] text-cex-tertiary uppercase tracking-wider bg-cex-surface border border-cex-border rounded-t">
         <span>Trade</span>
         <span>Sell Token</span>
         <span>Sell Amount</span>
@@ -287,13 +253,15 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
       </div>
 
       {/* Trade rows */}
-      {trades.map((trade) => (
+      {trades.map((trade, idx) => (
         <div
           key={trade.id}
-          className="grid grid-cols-[60px_1fr_1fr_1fr_1fr_40px] gap-2 items-center bg-zinc-800 rounded-xl p-3"
+          className={`grid grid-cols-[60px_1fr_1fr_1fr_1fr_36px] gap-2 items-center bg-cex-surface border border-cex-border px-3 py-2.5 ${
+            idx === 0 ? "-mt-3 rounded-b" : "rounded"
+          }`}
         >
           {/* Trade ID */}
-          <span className="text-sm font-mono text-violet-400 bg-violet-400/10 rounded-lg px-2 py-1 text-center">
+          <span className="text-xs font-mono text-cex-gold bg-cex-gold/10 rounded px-2 py-1 text-center">
             {trade.id}
           </span>
 
@@ -301,7 +269,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
           <div className="flex items-center gap-1.5">
             <TokenIcon symbol={trade.sellToken.symbol} size="sm" />
             <select
-              className="bg-zinc-700 text-white rounded-lg px-2 py-2 text-sm border border-zinc-600 flex-1 min-w-0"
+              className="bg-cex-surface-hover text-foreground rounded px-2 py-1.5 text-sm border border-cex-border flex-1 min-w-0 outline-none focus:border-cex-gold transition"
               value={trade.sellToken.symbol}
               onChange={(e) => {
                 const t = TOKEN_OPTIONS.find((o) => o.symbol === e.target.value)!;
@@ -323,7 +291,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
           <input
             type="text"
             placeholder="0.0"
-            className="bg-zinc-700 text-white rounded-lg px-3 py-2 text-sm border border-zinc-600 w-full outline-none focus:border-violet-500 transition"
+            className="bg-cex-surface-hover text-foreground rounded px-3 py-1.5 text-sm border border-cex-border w-full outline-none focus:border-cex-gold transition font-mono"
             value={trade.sellAmount}
             onChange={(e) => {
               updateTrade(trade.id, {
@@ -341,7 +309,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
           <div className="flex items-center gap-1.5">
             <TokenIcon symbol={trade.buyToken.symbol} size="sm" />
             <select
-              className="bg-zinc-700 text-white rounded-lg px-2 py-2 text-sm border border-zinc-600 flex-1 min-w-0"
+              className="bg-cex-surface-hover text-foreground rounded px-2 py-1.5 text-sm border border-cex-border flex-1 min-w-0 outline-none focus:border-cex-gold transition"
               value={trade.buyToken.symbol}
               onChange={(e) => {
                 const t = TOKEN_OPTIONS.find((o) => o.symbol === e.target.value)!;
@@ -363,31 +331,29 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
           </div>
 
           {/* Output */}
-          <div className="text-sm text-white px-2 truncate">
+          <div className="text-sm text-foreground px-2 truncate font-mono">
             {!isPairQuotable(trade.sellToken.symbol, trade.buyToken.symbol) ? (
-              <span className="text-amber-400 text-xs" title="This pair only has V4 liquidity — RFQ unavailable">
-                No RFQ
-              </span>
+              <span className="text-cex-red text-xs">No RFQ</span>
             ) : trade.status === "quoting" ? (
-              <span className="text-zinc-500 animate-pulse">quoting...</span>
+              <span className="text-cex-tertiary animate-pulse">quoting...</span>
             ) : trade.outputAmount ? (
-              <span className="text-green-400">
+              <span className="text-cex-green">
                 +{trade.outputAmount} {trade.buyToken.symbol}
               </span>
             ) : trade.error ? (
-              <span className="text-red-400 text-xs" title={trade.error}>
-                failed
+              <span className="text-cex-red text-xs" title={trade.error}>
+                {trade.error.length > 40 ? trade.error.slice(0, 40) + "..." : trade.error}
               </span>
             ) : (
-              <span className="text-zinc-600">—</span>
+              <span className="text-cex-tertiary">—</span>
             )}
           </div>
 
-          {/* Remove button */}
+          {/* Remove */}
           <button
             onClick={() => removeTrade(trade.id)}
             disabled={trades.length <= 1 || batchStep === "executing"}
-            className="text-zinc-500 hover:text-red-400 disabled:opacity-20 transition text-lg"
+            className="text-cex-tertiary hover:text-cex-red disabled:opacity-20 transition text-lg"
             title="Remove trade"
           >
             ×
@@ -395,11 +361,11 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
         </div>
       ))}
 
-      {/* Add trade button */}
+      {/* Add trade */}
       <button
         onClick={addTrade}
         disabled={batchStep === "executing"}
-        className="w-full border border-dashed border-zinc-700 hover:border-zinc-500 text-zinc-500 hover:text-zinc-300 rounded-xl py-2 text-sm transition disabled:opacity-30"
+        className="w-full border border-dashed border-cex-border hover:border-cex-secondary text-cex-tertiary hover:text-cex-secondary rounded py-2 text-sm transition disabled:opacity-30"
       >
         + Add Trade
       </button>
@@ -413,14 +379,14 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
           <button
             onClick={handleQuoteAll}
             disabled={!trades.some((t) => t.sellAmount && parseFloat(t.sellAmount) > 0 && isPairQuotable(t.sellToken.symbol, t.buyToken.symbol))}
-            className="flex-1 bg-zinc-700 hover:bg-zinc-600 disabled:bg-zinc-800 disabled:text-zinc-600 text-white font-semibold py-4 rounded-xl transition text-lg"
+            className="flex-1 bg-cex-surface border border-cex-border hover:bg-cex-surface-hover disabled:opacity-40 text-foreground font-semibold py-3 rounded transition text-sm"
           >
             Request Quotes (RFQ)
           </button>
         ) : batchStep === "quoting" ? (
           <button
             disabled
-            className="flex-1 bg-zinc-700 text-zinc-400 font-semibold py-4 rounded-xl text-lg"
+            className="flex-1 bg-cex-surface border border-cex-border text-cex-secondary font-semibold py-3 rounded text-sm"
           >
             Requesting quotes...
           </button>
@@ -430,13 +396,13 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
           <>
             <button
               onClick={resetAll}
-              className="px-6 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 font-semibold py-4 rounded-xl transition text-sm"
+              className="px-6 bg-cex-surface border border-cex-border hover:bg-cex-surface-hover text-cex-secondary font-semibold py-3 rounded transition text-sm"
             >
               Reset
             </button>
             <button
               onClick={handleExecuteBatch}
-              className="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-4 rounded-xl transition text-lg"
+              className="flex-1 bg-cex-gold hover:bg-cex-gold/90 text-[#0b0e11] font-semibold py-3 rounded transition text-sm"
             >
               Submit Batch ({trades.filter((t) => t.status === "quoted").length}{" "}
               {trades.filter((t) => t.status === "quoted").length === 1 ? "swap" : "swaps"})
@@ -447,41 +413,41 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
         {batchStep === "executing" ? (
           <button
             disabled
-            className="flex-1 bg-zinc-700 text-zinc-400 font-semibold py-4 rounded-xl text-lg animate-pulse"
+            className="flex-1 bg-cex-surface border border-cex-border text-cex-secondary font-semibold py-3 rounded text-sm animate-pulse"
           >
             Confirm batch in wallet...
           </button>
         ) : null}
       </div>
 
-      {/* Done state */}
+      {/* Done */}
       {batchStep === "done" && (
-        <div className="text-center space-y-2 bg-green-900/10 border border-green-800/30 rounded-xl p-4">
-          <div className="text-green-400 font-semibold text-lg">
+        <div className="text-center space-y-2 bg-cex-green/5 border border-cex-green/20 rounded p-4">
+          <div className="text-cex-green font-semibold">
             Batch swap submitted!
           </div>
           {txId && (
-            <p className="text-xs text-zinc-500 font-mono break-all">
+            <p className="text-xs text-cex-tertiary font-mono break-all">
               Batch ID: {txId}
             </p>
           )}
           <button
             onClick={resetAll}
-            className="mt-2 px-6 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg text-sm transition"
+            className="mt-2 px-6 py-2 bg-cex-surface border border-cex-border hover:bg-cex-surface-hover text-foreground rounded text-sm transition"
           >
             New Batch
           </button>
         </div>
       )}
 
-      {/* Error display */}
+      {/* Error */}
       {batchError && (
-        <div className="bg-red-900/30 border border-red-800 rounded-xl p-3 text-red-400 text-sm">
+        <div className="bg-cex-red/10 border border-cex-red/30 rounded p-3 text-cex-red text-sm">
           {batchError}
         </div>
       )}
 
-      {/* Settle to Arc */}
+      {/* Settle */}
       <SettleButton />
     </div>
   );
@@ -489,7 +455,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
 
 export default BatchSwapPanel;
 
-// ── PnL Summary Component ──
+// ── PnL Summary ──
 function BatchPnL({ trades }: { trades: TradeRow[] }) {
   const quotedTrades = trades.filter((t) => t.status === "quoted" && t.outputAmount);
   const failedTrades = trades.filter((t) => t.status === "error");
@@ -497,7 +463,6 @@ function BatchPnL({ trades }: { trades: TradeRow[] }) {
 
   if (quotedTrades.length === 0 && failedTrades.length === 0) return null;
 
-  // Aggregate sell/buy amounts by token
   const sellTotals = new Map<string, number>();
   const buyTotals = new Map<string, number>();
 
@@ -508,7 +473,6 @@ function BatchPnL({ trades }: { trades: TradeRow[] }) {
     buyTotals.set(t.buyToken.symbol, (buyTotals.get(t.buyToken.symbol) || 0) + buyAmt);
   }
 
-  // Net position per token (positive = receiving, negative = spending)
   const netPositions = new Map<string, number>();
   for (const [sym, amt] of sellTotals) {
     netPositions.set(sym, (netPositions.get(sym) || 0) - amt);
@@ -520,77 +484,77 @@ function BatchPnL({ trades }: { trades: TradeRow[] }) {
   const sortedPositions = [...netPositions.entries()].sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className="bg-zinc-800/60 border border-zinc-700/50 rounded-xl p-4 space-y-3">
+    <div className="bg-cex-surface border border-cex-border rounded p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-white">Batch Summary</h3>
+        <h3 className="text-sm font-semibold text-foreground">Batch Summary</h3>
         <div className="flex gap-2 text-xs">
           {quotedTrades.length > 0 && (
-            <span className="text-green-400">{quotedTrades.length} quoted</span>
+            <span className="text-cex-green">{quotedTrades.length} quoted</span>
           )}
           {failedTrades.length > 0 && (
-            <span className="text-red-400">{failedTrades.length} failed</span>
+            <span className="text-cex-red">{failedTrades.length} failed</span>
           )}
           {pendingTrades.length > 0 && (
-            <span className="text-zinc-500">{pendingTrades.length} pending</span>
+            <span className="text-cex-tertiary">{pendingTrades.length} pending</span>
           )}
         </div>
       </div>
 
-      {/* Sell side */}
+      {/* Sell */}
       {sellTotals.size > 0 && (
         <div className="space-y-1">
-          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">You spend</p>
+          <p className="text-[10px] text-cex-tertiary uppercase tracking-wider">You spend</p>
           <div className="flex flex-wrap gap-2">
             {[...sellTotals.entries()].map(([sym, amt]) => (
-              <div key={`sell-${sym}`} className="flex items-center gap-1.5 bg-red-900/20 border border-red-800/30 rounded-lg px-2.5 py-1.5">
+              <div key={`sell-${sym}`} className="flex items-center gap-1.5 bg-cex-red/5 border border-cex-red/15 rounded px-2.5 py-1.5">
                 <TokenIcon symbol={sym} size="sm" />
-                <span className="text-sm font-mono text-red-400">-{formatPnL(amt)}</span>
-                <span className="text-xs text-red-400/60">{sym}</span>
+                <span className="text-sm font-mono text-cex-red">-{formatPnL(amt)}</span>
+                <span className="text-xs text-cex-red/60">{sym}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Buy side */}
+      {/* Buy */}
       {buyTotals.size > 0 && (
         <div className="space-y-1">
-          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">You receive</p>
+          <p className="text-[10px] text-cex-tertiary uppercase tracking-wider">You receive</p>
           <div className="flex flex-wrap gap-2">
             {[...buyTotals.entries()].map(([sym, amt]) => (
-              <div key={`buy-${sym}`} className="flex items-center gap-1.5 bg-green-900/20 border border-green-800/30 rounded-lg px-2.5 py-1.5">
+              <div key={`buy-${sym}`} className="flex items-center gap-1.5 bg-cex-green/5 border border-cex-green/15 rounded px-2.5 py-1.5">
                 <TokenIcon symbol={sym} size="sm" />
-                <span className="text-sm font-mono text-green-400">+{formatPnL(amt)}</span>
-                <span className="text-xs text-green-400/60">{sym}</span>
+                <span className="text-sm font-mono text-cex-green">+{formatPnL(amt)}</span>
+                <span className="text-xs text-cex-green/60">{sym}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Net position */}
+      {/* Net */}
       {sortedPositions.length > 0 && (
-        <div className="border-t border-zinc-700/50 pt-3 space-y-1">
-          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Net Position</p>
+        <div className="border-t border-cex-border pt-3 space-y-1">
+          <p className="text-[10px] text-cex-tertiary uppercase tracking-wider">Net Position</p>
           <div className="flex flex-wrap gap-2">
             {sortedPositions.map(([sym, net]) => (
               <div
                 key={`net-${sym}`}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 ${
+                className={`flex items-center gap-1.5 rounded px-2.5 py-1.5 ${
                   net > 0
-                    ? "bg-green-900/10 border border-green-800/20"
-                    : "bg-red-900/10 border border-red-800/20"
+                    ? "bg-cex-green/5 border border-cex-green/10"
+                    : "bg-cex-red/5 border border-cex-red/10"
                 }`}
               >
                 <TokenIcon symbol={sym} size="sm" />
                 <span
                   className={`text-sm font-mono ${
-                    net > 0 ? "text-green-400" : "text-red-400"
+                    net > 0 ? "text-cex-green" : "text-cex-red"
                   }`}
                 >
                   {net > 0 ? "+" : ""}{formatPnL(net)}
                 </span>
-                <span className="text-xs text-zinc-500">{sym}</span>
+                <span className="text-xs text-cex-tertiary">{sym}</span>
               </div>
             ))}
           </div>

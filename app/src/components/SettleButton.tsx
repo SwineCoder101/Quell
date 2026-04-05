@@ -44,12 +44,11 @@ export default function SettleButton() {
   const handleSettle = async () => {
     if (!amount || parseFloat(amount) <= 0) return;
 
-    // Switch to Ethereum Sepolia if not already there
     if (chain?.id !== 11155111) {
       try {
         await switchChainAsync({ chainId: 11155111 });
       } catch {
-        return; // user rejected chain switch
+        return;
       }
     }
 
@@ -84,10 +83,10 @@ export default function SettleButton() {
   };
 
   return (
-    <div className="mt-4">
+    <div className="mt-3">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-center gap-2 border border-cyan-700/50 hover:border-cyan-600 bg-cyan-950/30 hover:bg-cyan-950/50 text-cyan-400 font-medium py-3 rounded-xl transition text-sm"
+        className="w-full flex items-center justify-center gap-2 border border-cex-border hover:border-cex-secondary bg-cex-surface hover:bg-cex-surface-hover text-cex-secondary font-medium py-2.5 rounded transition text-sm"
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -104,25 +103,25 @@ export default function SettleButton() {
       </button>
 
       {open && (
-        <div className="mt-3 bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 space-y-3">
+        <div className="mt-2 bg-cex-surface border border-cex-border rounded p-4 space-y-3">
           {/* Method toggle */}
-          <div className="flex gap-1 bg-zinc-800 rounded-lg p-0.5">
+          <div className="flex gap-px bg-cex-border rounded overflow-hidden">
             <button
               onClick={() => { setMethod("cctp"); handleReset(); }}
-              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${
+              className={`flex-1 py-1.5 text-xs font-medium transition ${
                 method === "cctp"
-                  ? "bg-cyan-900/50 text-cyan-400"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-cex-gold/10 text-cex-gold"
+                  : "bg-cex-surface text-cex-secondary hover:text-foreground"
               }`}
             >
               CCTP V2 (~15 min)
             </button>
             <button
               onClick={() => { setMethod("gateway"); handleReset(); }}
-              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition ${
+              className={`flex-1 py-1.5 text-xs font-medium transition ${
                 method === "gateway"
-                  ? "bg-cyan-900/50 text-cyan-400"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-cex-gold/10 text-cex-gold"
+                  : "bg-cex-surface text-cex-secondary hover:text-foreground"
               }`}
             >
               Gateway (~instant, 2% fee)
@@ -130,18 +129,18 @@ export default function SettleButton() {
           </div>
 
           {/* Info */}
-          <div className="text-xs text-zinc-500">
+          <div className="text-xs text-cex-tertiary">
             {method === "cctp"
               ? "Burns USDC on Ethereum Sepolia → auto-mints on Arc. No fee, ~15-20 min."
               : "Deposits into Circle Gateway → instant mint on Arc. ~2% fee (min 2.01 USDC)."}
           </div>
 
-          {/* Amount input */}
+          {/* Amount */}
           <div className="flex gap-2">
             <input
               type="text"
               placeholder="USDC amount"
-              className="flex-1 bg-zinc-700 text-white rounded-lg px-3 py-2 text-sm border border-zinc-600 outline-none focus:border-cyan-500 transition"
+              className="flex-1 bg-cex-surface-hover text-foreground rounded px-3 py-2 text-sm border border-cex-border outline-none focus:border-cex-gold transition font-mono"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               disabled={isProcessing}
@@ -149,7 +148,7 @@ export default function SettleButton() {
             <button
               onClick={handleSettle}
               disabled={!amount || parseFloat(amount) <= 0 || isProcessing}
-              className="bg-cyan-600 hover:bg-cyan-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-medium px-4 py-2 rounded-lg text-sm transition"
+              className="bg-cex-gold hover:bg-cex-gold/90 disabled:bg-cex-surface disabled:border disabled:border-cex-border disabled:text-cex-tertiary text-[#0b0e11] font-medium px-4 py-2 rounded text-sm transition"
             >
               Settle
             </button>
@@ -157,14 +156,14 @@ export default function SettleButton() {
 
           {/* Status */}
           {isProcessing && (
-            <div className="text-sm text-cyan-400 animate-pulse">
+            <div className="text-sm text-cex-gold animate-pulse">
               {stepLabel[step] || "Processing..."}
             </div>
           )}
 
           {step === "done" && (
             <div className="space-y-1">
-              <div className="text-sm text-green-400 font-medium">
+              <div className="text-sm text-cex-green font-medium">
                 {method === "cctp"
                   ? "USDC burn submitted! It will mint on Arc in ~15-20 minutes."
                   : "Gateway transfer complete!"}
@@ -174,19 +173,19 @@ export default function SettleButton() {
                   href={`https://sepolia.etherscan.io/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-cyan-400 hover:underline text-xs"
+                  className="text-cex-gold hover:underline text-xs"
                 >
                   View on Etherscan
                 </a>
               )}
               {transferId && (
-                <p className="text-xs text-zinc-500 font-mono">
+                <p className="text-xs text-cex-tertiary font-mono">
                   Transfer ID: {transferId}
                 </p>
               )}
               <button
                 onClick={handleReset}
-                className="text-xs text-zinc-400 hover:text-white"
+                className="text-xs text-cex-secondary hover:text-foreground"
               >
                 New settlement
               </button>
@@ -194,7 +193,7 @@ export default function SettleButton() {
           )}
 
           {error && (
-            <div className="text-sm text-red-400">
+            <div className="text-sm text-cex-red">
               {error}
             </div>
           )}

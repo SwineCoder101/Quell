@@ -28,7 +28,6 @@ export default function StrategyChat({
 
   const isLoading = status === "streaming" || status === "submitted";
 
-  // Auto-scroll to bottom on new messages
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -49,19 +48,19 @@ export default function StrategyChat({
   };
 
   return (
-    <div className="flex flex-col h-[600px] bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-zinc-800">
-        <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-        <span className="text-sm font-medium text-white">Strategy Agent</span>
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-cex-border bg-cex-surface">
+        <div className="w-1.5 h-1.5 rounded-full bg-cex-gold animate-pulse" />
+        <span className="text-sm font-medium text-foreground">Strategy Agent</span>
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-3 space-y-3">
         {messages.length === 0 && (
-          <div className="text-center text-zinc-500 text-xs py-8 space-y-2">
-            <p className="text-sm">Describe a strategy</p>
-            <p className="text-zinc-600">
+          <div className="text-center text-cex-tertiary text-xs py-8 space-y-2">
+            <p className="text-sm text-cex-secondary">Describe a strategy</p>
+            <p>
               e.g. &quot;Swap 50% of my WETH into stablecoins&quot;
             </p>
           </div>
@@ -77,7 +76,7 @@ export default function StrategyChat({
             <div
               className={`max-w-[90%] space-y-2 ${
                 message.role === "user"
-                  ? "bg-zinc-800 rounded-xl rounded-br-sm px-3 py-2"
+                  ? "bg-cex-surface border border-cex-border rounded rounded-br-sm px-3 py-2"
                   : ""
               }`}
             >
@@ -88,8 +87,8 @@ export default function StrategyChat({
                       key={i}
                       className={`text-sm whitespace-pre-wrap ${
                         message.role === "user"
-                          ? "text-white"
-                          : "text-zinc-300 bg-zinc-800/50 rounded-xl rounded-bl-sm px-3 py-2"
+                          ? "text-foreground"
+                          : "text-cex-secondary bg-cex-surface/50 border border-cex-border/50 rounded rounded-bl-sm px-3 py-2"
                       }`}
                     >
                       {part.text}
@@ -97,7 +96,6 @@ export default function StrategyChat({
                   );
                 }
 
-                // Tool invocation parts have type "tool-<toolName>"
                 if (
                   "toolCallId" in part &&
                   part.type === "tool-suggest_trades" &&
@@ -132,8 +130,8 @@ export default function StrategyChat({
           messages.length > 0 &&
           messages[messages.length - 1]?.role === "user" && (
             <div className="flex justify-start">
-              <div className="bg-zinc-800/50 rounded-xl px-3 py-2">
-                <span className="text-sm text-zinc-500 animate-pulse">
+              <div className="bg-cex-surface border border-cex-border rounded px-3 py-2">
+                <span className="text-sm text-cex-tertiary animate-pulse">
                   Thinking...
                 </span>
               </div>
@@ -143,26 +141,26 @@ export default function StrategyChat({
 
       {/* Error */}
       {error && (
-        <div className="px-3 py-2 text-xs text-red-400 bg-red-900/20 border-t border-red-800/30">
+        <div className="px-3 py-2 text-xs text-cex-red bg-cex-red/5 border-t border-cex-red/20">
           {error.message}
         </div>
       )}
 
       {/* Input */}
-      <form onSubmit={handleSubmit} className="border-t border-zinc-800 p-3">
+      <form onSubmit={handleSubmit} className="border-t border-cex-border p-3 bg-cex-surface">
         <div className="flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Describe a strategy..."
-            className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 outline-none focus:border-violet-500 transition"
+            className="flex-1 bg-cex-surface-hover border border-cex-border rounded px-3 py-2 text-sm text-foreground placeholder-cex-tertiary outline-none focus:border-cex-gold transition"
             disabled={isLoading}
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded-lg px-3 py-2 text-sm font-medium transition"
+            className="bg-cex-gold hover:bg-cex-gold/90 disabled:bg-cex-surface disabled:border disabled:border-cex-border disabled:text-cex-tertiary text-[#0b0e11] rounded px-3 py-2 text-sm font-medium transition"
           >
             <svg
               className="w-4 h-4"

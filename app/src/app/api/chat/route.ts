@@ -81,6 +81,9 @@ export async function POST(req: Request) {
             })
           ),
         }),
+        execute: async ({ summary, trades }) => {
+          return { summary, trades, displayed: true };
+        },
       }),
     },
   });
