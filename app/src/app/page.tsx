@@ -123,7 +123,7 @@ export default function Home() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         {/* Top Header Bar */}
         <header className="flex items-center justify-between px-6 h-12" style={{ borderBottom: '1px solid rgba(42,37,32,0.06)' }}>
           <div className="flex items-center gap-3">
@@ -235,7 +235,7 @@ export default function Home() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 overflow-auto min-h-0">
           {activeTab === "batch" ? (
             <div className="flex h-full">
               <div className="flex-1 min-w-0 p-6 overflow-auto">
