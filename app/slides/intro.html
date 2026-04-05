@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920,height=1080">
+<title>Tranquille — ETH Global Cannes 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300;1,9..40,400&family=JetBrains+Mono:wght@300;400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #050810;
+    font-family: 'DM Sans', sans-serif;
+  }
+  canvas#bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; }
+
+  /* ── Slide system ── */
+  .slide {
+    position: fixed; top: 0; left: 0; z-index: 1;
+    width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(20px);
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-60px);
+  }
+  .slide.exit-right {
+    opacity: 0;
+    transform: translateX(60px);
+  }
+
+  /* ── Slide indicator dots ── */
+  .slide-nav {
+    position: fixed;
+    bottom: 36px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .slide-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(94, 234, 212, 0.15);
+    border: 1px solid rgba(94, 234, 212, 0.2);
+    transition: all 0.4s ease;
+    cursor: pointer;
+  }
+  .slide-dot.active {
+    background: rgba(94, 234, 212, 0.7);
+    box-shadow: 0 0 10px rgba(94, 234, 212, 0.3);
+    width: 24px;
+    border-radius: 3px;
+  }
+
+  /* ── Nav hint ── */
+  .nav-hint {
+    position: fixed;
+    bottom: 36px; right: 40px;
+    z-index: 10;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(107, 115, 148, 0.3);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-hint kbd {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 18px;
+    border: 1px solid rgba(107, 115, 148, 0.2);
+    border-radius: 3px;
+    font-size: 10px;
+    color: rgba(107, 115, 148, 0.4);
+  }
+
+  /* ── Slide counter ── */
+  .slide-count {
+    position: fixed;
+    bottom: 36px; left: 40px;
+    z-index: 10;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: rgba(107, 115, 148, 0.3);
+  }
+
+  /* ── Animations ── */
+  @keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.5; }
+    50%      { opacity: 1; }
+  }
+  @keyframes lineGrow {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Staggered children animation ── */
+  .slide.active .stagger { opacity: 0; animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .slide.active .stagger:nth-child(1) { animation-delay: 0.1s; }
+  .slide.active .stagger:nth-child(2) { animation-delay: 0.25s; }
+  .slide.active .stagger:nth-child(3) { animation-delay: 0.4s; }
+  .slide.active .stagger:nth-child(4) { animation-delay: 0.55s; }
+  .slide.active .stagger:nth-child(5) { animation-delay: 0.7s; }
+  .slide.active .stagger:nth-child(6) { animation-delay: 0.85s; }
+  .slide.active .stagger:nth-child(7) { animation-delay: 1.0s; }
+
+  /* ── Event badge ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 22px;
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    border-radius: 100px;
+    background: rgba(94, 234, 212, 0.04);
+    backdrop-filter: blur(12px);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 400;
+    letter-spacing: 3px; text-transform: uppercase;
+    color: rgba(94, 234, 212, 0.8);
+    margin-bottom: 48px;
+  }
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: #5eead4;
+    border-radius: 50%;
+    animation: breathe 2.5s ease-in-out infinite;
+    box-shadow: 0 0 8px rgba(94, 234, 212, 0.6);
+  }
+
+  /* ── Title ── */
+  .title {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(80px, 10vw, 148px);
+    font-weight: 400;
+    font-style: italic;
+    color: #e8ecf7;
+    letter-spacing: -2px;
+    line-height: 1;
+    margin-bottom: 12px;
+    background: linear-gradient(120deg, #e8ecf7 0%, #e8ecf7 40%, #5eead4 50%, #e8ecf7 60%, #e8ecf7 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 6s ease-in-out 2.5s infinite;
+  }
+
+  /* ── Slide titles (for non-intro slides) ── */
+  .slide-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(48px, 5vw, 72px);
+    font-weight: 400;
+    font-style: italic;
+    color: #e8ecf7;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .slide-subtitle {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 18px;
+    font-weight: 300;
+    font-style: italic;
+    color: rgba(94, 234, 212, 0.6);
+    letter-spacing: 0.5px;
+    margin-bottom: 56px;
+  }
+
+  /* ── Tagline ── */
+  .tagline {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 22px;
+    font-weight: 300;
+    font-style: italic;
+    color: rgba(94, 234, 212, 0.7);
+    letter-spacing: 1px;
+    margin-bottom: 64px;
+  }
+
+  /* ── Separator ── */
+  .sep {
+    width: 120px; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(94, 234, 212, 0.3), transparent);
+    margin-bottom: 56px;
+    transform-origin: center;
+  }
+  .slide.active .sep { animation: lineGrow 1.2s cubic-bezier(0.16,1,0.3,1) 0.5s both; }
+
+  /* ── Feature row ── */
+  .features {
+    display: flex; align-items: center; gap: 40px;
+    margin-bottom: 56px;
+  }
+  .feature {
+    display: flex; align-items: center; gap: 12px;
+    color: rgba(232, 236, 247, 0.55);
+    font-size: 14px; font-weight: 400;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
+  }
+  .feature svg {
+    width: 20px; height: 20px;
+    stroke: rgba(94, 234, 212, 0.5);
+    stroke-width: 1.5; fill: none;
+    stroke-linecap: round; stroke-linejoin: round;
+    transition: stroke 0.3s ease;
+  }
+  .feature:hover { color: rgba(232, 236, 247, 0.9); }
+  .feature:hover svg { stroke: #5eead4; }
+  .dot-sep {
+    width: 3px; height: 3px;
+    background: rgba(94, 234, 212, 0.2);
+    border-radius: 50%;
+  }
+
+  /* ── Tech stack ── */
+  .tech {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 300;
+    letter-spacing: 2.5px; text-transform: uppercase;
+    color: rgba(107, 115, 148, 0.5);
+  }
+
+  /* ── Corner accents ── */
+  .corner {
+    position: fixed;
+    width: 60px; height: 60px;
+    z-index: 5;
+  }
+  .corner--tl { top: 32px; left: 32px; border-top: 1px solid rgba(94,234,212,0.12); border-left: 1px solid rgba(94,234,212,0.12); }
+  .corner--tr { top: 32px; right: 32px; border-top: 1px solid rgba(94,234,212,0.12); border-right: 1px solid rgba(94,234,212,0.12); }
+  .corner--bl { bottom: 32px; left: 32px; border-bottom: 1px solid rgba(94,234,212,0.12); border-left: 1px solid rgba(94,234,212,0.12); }
+  .corner--br { bottom: 32px; right: 32px; border-bottom: 1px solid rgba(94,234,212,0.12); border-right: 1px solid rgba(94,234,212,0.12); }
+
+  /* ── Problem slide ── */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 900px;
+    width: 100%;
+    padding: 0 80px;
+  }
+  .problem-card {
+    padding: 32px;
+    border-radius: 16px;
+    background: rgba(255, 180, 171, 0.03);
+    border: 1px solid rgba(255, 180, 171, 0.08);
+    transition: border-color 0.3s ease, background 0.3s ease;
+  }
+  .problem-card:hover {
+    border-color: rgba(255, 180, 171, 0.2);
+    background: rgba(255, 180, 171, 0.06);
+  }
+  .problem-card .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: rgba(255, 180, 171, 0.4);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .problem-card h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: rgba(232, 236, 247, 0.8);
+    margin-bottom: 8px;
+  }
+  .problem-card p {
+    font-size: 13px;
+    font-weight: 300;
+    color: rgba(232, 236, 247, 0.4);
+    line-height: 1.6;
+  }
+
+  /* ── Solution slide ── */
+  .solution-flow {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    max-width: 1100px;
+    padding: 0 60px;
+  }
+  .solution-step {
+    flex: 1;
+    padding: 32px 28px;
+    border-radius: 16px;
+    background: rgba(94, 234, 212, 0.03);
+    border: 1px solid rgba(94, 234, 212, 0.08);
+    text-align: center;
+    transition: border-color 0.3s ease, background 0.3s ease;
+  }
+  .solution-step:hover {
+    border-color: rgba(94, 234, 212, 0.25);
+    background: rgba(94, 234, 212, 0.06);
+  }
+  .solution-step svg {
+    width: 32px; height: 32px;
+    stroke: rgba(94, 234, 212, 0.6);
+    stroke-width: 1.5; fill: none;
+    stroke-linecap: round; stroke-linejoin: round;
+    margin-bottom: 16px;
+  }
+  .solution-step h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px; font-weight: 500;
+    color: rgba(232, 236, 247, 0.85);
+    margin-bottom: 8px;
+  }
+  .solution-step p {
+    font-size: 13px; font-weight: 300;
+    color: rgba(232, 236, 247, 0.4);
+    line-height: 1.5;
+  }
+  .flow-arrow {
+    font-size: 20px;
+    color: rgba(94, 234, 212, 0.2);
+    flex-shrink: 0;
+  }
+
+  /* ── Architecture slide ── */
+  .arch-row {
+    display: flex;
+    align-items: stretch;
+    gap: 24px;
+    max-width: 1000px;
+    width: 100%;
+    padding: 0 80px;
+  }
+  .arch-col {
+    flex: 1;
+    padding: 28px;
+    border-radius: 16px;
+    border: 1px solid rgba(94, 234, 212, 0.06);
+    background: rgba(94, 234, 212, 0.02);
+  }
+  .arch-col h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(94, 234, 212, 0.5);
+    margin-bottom: 20px;
+  }
+  .arch-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    font-size: 14px; font-weight: 400;
+    color: rgba(232, 236, 247, 0.6);
+  }
+  .arch-item span.dot {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: rgba(94, 234, 212, 0.4);
+    flex-shrink: 0;
+  }
+
+  /* ── Bounties slide ── */
+  .bounty-grid {
+    display: flex;
+    gap: 28px;
+    max-width: 1000px;
+    padding: 0 80px;
+  }
+  .bounty-card {
+    flex: 1;
+    padding: 36px 28px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid rgba(245, 197, 66, 0.08);
+    background: rgba(245, 197, 66, 0.02);
+    transition: border-color 0.3s ease;
+  }
+  .bounty-card:hover {
+    border-color: rgba(245, 197, 66, 0.2);
+  }
+  .bounty-card .bounty-logo {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 24px; font-weight: 500;
+    color: rgba(245, 197, 66, 0.7);
+    margin-bottom: 12px;
+  }
+  .bounty-card p {
+    font-size: 13px; font-weight: 300;
+    color: rgba(232, 236, 247, 0.4);
+    line-height: 1.5;
+  }
+
+  /* ── Demo slide ── */
+  .demo-cta {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 16px 40px;
+    border-radius: 100px;
+    background: linear-gradient(135deg, rgba(94,234,212,0.15), rgba(94,234,212,0.05));
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(94, 234, 212, 0.9);
+    margin-top: 20px;
+  }
+  .demo-cta svg {
+    width: 18px; height: 18px;
+    stroke: rgba(94, 234, 212, 0.7);
+    stroke-width: 1.5; fill: none;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<!-- Corner frame accents -->
+<div class="corner corner--tl"></div>
+<div class="corner corner--tr"></div>
+<div class="corner corner--bl"></div>
+<div class="corner corner--br"></div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 1 — INTRO
+     ═══════════════════════════════════════════ -->
+<div class="slide active" data-slide="0">
+  <div class="badge stagger">ETH Global Cannes 2026</div>
+  <h1 class="title stagger">Tranquille</h1>
+  <p class="tagline stagger">AI-powered batch trading for DeFi</p>
+  <div class="sep stagger"></div>
+  <div class="features stagger">
+    <div class="feature">
+      <svg viewBox="0 0 24 24"><path d="M12 2c-4 0-6 2.5-6 5-2 .5-3 2-3 4 0 2 1 3.5 2.5 4-.5 1.5 0 3 1.5 4 1.5 1 3 1 5 1"/><path d="M12 2c4 0 6 2.5 6 5 2 .5 3 2 3 4 0 2-1 3.5-2.5 4 .5 1.5 0 3-1.5 4-1.5 1-3 1-5 1"/><line x1="12" y1="2" x2="12" y2="20"/></svg>
+      <span>AI Strategy</span>
+    </div>
+    <div class="dot-sep"></div>
+    <div class="feature">
+      <svg viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7"/><polyline points="2,12 12,17 22,12"/><polyline points="2,17 12,22 22,17"/></svg>
+      <span>Batch Execution</span>
+    </div>
+    <div class="dot-sep"></div>
+    <div class="feature">
+      <svg viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+      <span>Portfolio</span>
+    </div>
+    <div class="dot-sep"></div>
+    <div class="feature">
+      <svg viewBox="0 0 24 24"><polyline points="8,3 4,7 8,11"/><line x1="4" y1="7" x2="20" y2="7"/><polyline points="16,13 20,17 16,21"/><line x1="20" y1="17" x2="4" y2="17"/></svg>
+      <span>Cross-Chain</span>
+    </div>
+  </div>
+  <p class="tech stagger">Uniswap V3/V4 &nbsp;&middot;&nbsp; Circle CCTP &nbsp;&middot;&nbsp; Claude AI &nbsp;&middot;&nbsp; EIP-5792</p>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 2 — THE PROBLEM
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="1">
+  <h2 class="slide-title stagger">The Problem</h2>
+  <p class="slide-subtitle stagger">DeFi trading is noisy, manual, and fragmented</p>
+  <div class="problem-grid stagger">
+    <div class="problem-card">
+      <div class="num">01</div>
+      <h3>One trade at a time</h3>
+      <p>Rebalancing a portfolio means dozens of individual swaps, each requiring separate approvals and gas.</p>
+    </div>
+    <div class="problem-card">
+      <div class="num">02</div>
+      <h3>No strategy layer</h3>
+      <p>Users must manually translate investment intent into specific token pairs and amounts.</p>
+    </div>
+    <div class="problem-card">
+      <div class="num">03</div>
+      <h3>Fragmented settlement</h3>
+      <p>Moving assets cross-chain requires navigating separate bridges with different interfaces.</p>
+    </div>
+    <div class="problem-card">
+      <div class="num">04</div>
+      <h3>No portfolio context</h3>
+      <p>Swap UIs are blind to your holdings — you're trading without seeing the full picture.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 3 — THE SOLUTION
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="2">
+  <h2 class="slide-title stagger">How It Works</h2>
+  <p class="slide-subtitle stagger">From intent to execution in three steps</p>
+  <div class="solution-flow stagger">
+    <div class="solution-step">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <h3>Describe your intent</h3>
+      <p>"Rebalance 50% of my WETH into stablecoins and blue chips"</p>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="solution-step">
+      <svg viewBox="0 0 24 24"><path d="M12 2c-4 0-6 2.5-6 5-2 .5-3 2-3 4 0 2 1 3.5 2.5 4-.5 1.5 0 3 1.5 4 1.5 1 3 1 5 1"/><path d="M12 2c4 0 6 2.5 6 5 2 .5 3 2 3 4 0 2-1 3.5-2.5 4 .5 1.5 0 3-1.5 4-1.5 1-3 1-5 1"/></svg>
+      <h3>AI generates trades</h3>
+      <p>Claude validates against your balances, available pairs, and slippage tolerance</p>
+    </div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="solution-step">
+      <svg viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7"/><polyline points="2,12 12,17 22,12"/><polyline points="2,17 12,22 22,17"/></svg>
+      <h3>Batch execute</h3>
+      <p>All swaps bundled via EIP-5792 — one signature, one transaction</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 4 — ARCHITECTURE
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="3">
+  <h2 class="slide-title stagger">Architecture</h2>
+  <p class="slide-subtitle stagger">What powers the calm</p>
+  <div class="arch-row stagger">
+    <div class="arch-col">
+      <h4>Frontend</h4>
+      <div class="arch-item"><span class="dot"></span> Next.js 16 + React 19</div>
+      <div class="arch-item"><span class="dot"></span> wagmi v2 + RainbowKit</div>
+      <div class="arch-item"><span class="dot"></span> Vercel AI SDK (streaming)</div>
+      <div class="arch-item"><span class="dot"></span> TailwindCSS 4</div>
+    </div>
+    <div class="arch-col">
+      <h4>Protocol Layer</h4>
+      <div class="arch-item"><span class="dot"></span> Uniswap V3 / V4 (RFQ)</div>
+      <div class="arch-item"><span class="dot"></span> Universal Router v2</div>
+      <div class="arch-item"><span class="dot"></span> EIP-5792 batch calls</div>
+      <div class="arch-item"><span class="dot"></span> EIP-712 permit signatures</div>
+    </div>
+    <div class="arch-col">
+      <h4>AI + Settlement</h4>
+      <div class="arch-item"><span class="dot"></span> Claude Sonnet 4 (strategy)</div>
+      <div class="arch-item"><span class="dot"></span> Tool-use: suggest_trades</div>
+      <div class="arch-item"><span class="dot"></span> Circle CCTP V2</div>
+      <div class="arch-item"><span class="dot"></span> Circle Gateway (instant)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 5 — BOUNTIES
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="4">
+  <h2 class="slide-title stagger">Sponsor Integration</h2>
+  <p class="slide-subtitle stagger">Built on the best of web3 infrastructure</p>
+  <div class="bounty-grid stagger">
+    <div class="bounty-card">
+      <div class="bounty-logo">Uniswap</div>
+      <p>V3 + V4 pools on Sepolia. Trading API for RFQ-based quoting. Universal Router for execution.</p>
+    </div>
+    <div class="bounty-card">
+      <div class="bounty-logo">Circle</div>
+      <p>CCTP V2 for trustless cross-chain USDC. Gateway for instant settlement with EIP-712.</p>
+    </div>
+    <div class="bounty-card">
+      <div class="bounty-logo">Anthropic</div>
+      <p>Claude Sonnet 4 as the strategy engine. Tool-use for validated trade generation.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 6 — DEMO / THANK YOU
+     ═══════════════════════════════════════════ -->
+<div class="slide" data-slide="5">
+  <div class="badge stagger">Live Demo</div>
+  <h2 class="slide-title stagger" style="font-size: clamp(60px, 7vw, 100px); margin-bottom: 24px;">Merci.</h2>
+  <p class="slide-subtitle stagger" style="margin-bottom: 40px;">Let's see Tranquille in action</p>
+  <div class="sep stagger"></div>
+  <div class="demo-cta stagger">
+    <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21 5,3"/></svg>
+    Start Demo
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="slide-nav" id="slideNav"></div>
+<div class="slide-count" id="slideCount"></div>
+<div class="nav-hint">
+  <kbd>&larr;</kbd><kbd>&rarr;</kbd> navigate
+</div>
+
+<script>
+// ── Slide navigation ──
+const slides = document.querySelectorAll('.slide');
+const navContainer = document.getElementById('slideNav');
+const countEl = document.getElementById('slideCount');
+let current = 0;
+let transitioning = false;
+
+// Build dots
+slides.forEach((_, i) => {
+  const dot = document.createElement('div');
+  dot.className = 'slide-dot' + (i === 0 ? ' active' : '');
+  dot.addEventListener('click', () => goTo(i));
+  navContainer.appendChild(dot);
+});
+
+function updateCount() {
+  countEl.textContent = `${current + 1} / ${slides.length}`;
+}
+updateCount();
+
+function goTo(index) {
+  if (transitioning || index === current || index < 0 || index >= slides.length) return;
+  transitioning = true;
+
+  const dir = index > current ? 'left' : 'right';
+  const oldSlide = slides[current];
+  const newSlide = slides[index];
+
+  // Exit old
+  oldSlide.classList.remove('active');
+  oldSlide.classList.add(dir === 'left' ? 'exit-left' : 'exit-right');
+
+  // Reset stagger animations on old slide
+  oldSlide.querySelectorAll('.stagger').forEach(el => {
+    el.style.animation = 'none';
+  });
+
+  // Enter new
+  newSlide.style.transform = dir === 'left' ? 'translateX(60px)' : 'translateX(-60px)';
+  newSlide.classList.remove('exit-left', 'exit-right');
+
+  // Reset stagger animations for new slide
+  newSlide.querySelectorAll('.stagger').forEach(el => {
+    el.style.animation = '';
+    el.style.opacity = '0';
+  });
+
+  requestAnimationFrame(() => {
+    newSlide.style.transform = '';
+    newSlide.classList.add('active');
+  });
+
+  // Update dots
+  navContainer.children[current].classList.remove('active');
+  navContainer.children[index].classList.add('active');
+
+  current = index;
+  updateCount();
+
+  // Clean up old slide after transition
+  setTimeout(() => {
+    oldSlide.classList.remove('exit-left', 'exit-right');
+    transitioning = false;
+  }, 650);
+}
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+  if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+  if (e.key === 'End') { e.preventDefault(); goTo(slides.length - 1); }
+});
+
+// ── Animated canvas background ──
+const canvas = document.getElementById('bg');
+const ctx = canvas.getContext('2d');
+let W, H, t = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth * devicePixelRatio;
+  H = canvas.height = window.innerHeight * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+resize();
+window.addEventListener('resize', () => { ctx.setTransform(1,0,0,1,0,0); resize(); });
+
+const particles = Array.from({ length: 60 }, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  r: Math.random() * 1.5 + 0.3,
+  vx: (Math.random() - 0.5) * 0.15,
+  vy: -Math.random() * 0.2 - 0.05,
+  alpha: Math.random() * 0.4 + 0.1,
+  phase: Math.random() * Math.PI * 2,
+}));
+
+function loop() {
+  t += 0.004;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  const bg = ctx.createRadialGradient(vw*0.5, vh*0.38, 0, vw*0.5, vh*0.38, vw*0.8);
+  bg.addColorStop(0, '#0c1220');
+  bg.addColorStop(0.4, '#080d18');
+  bg.addColorStop(1, '#040610');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, vw, vh);
+
+  // Caustics
+  const imageData = ctx.createImageData(vw, vh);
+  const data = imageData.data;
+  const step = 4;
+  for (let y = 0; y < vh; y += step) {
+    for (let x = 0; x < vw; x += step) {
+      const fx = x/vw, fy = y/vh;
+      const w1 = Math.sin(fx*8 + t*2.0) * Math.cos(fy*6 - t*1.5);
+      const w2 = Math.sin(fx*12 - t*1.2 + fy*10) * Math.cos(fy*8 + t*0.8);
+      const w3 = Math.sin((fx+fy)*6 + t*1.7) * Math.sin((fx-fy)*8 - t*1.1);
+      const intensity = Math.pow(Math.max(0, (w1+w2+w3)/3), 3);
+      const r = intensity*20, g = intensity*55, b = intensity*50, a = intensity*35;
+      for (let dy = 0; dy < step && y+dy < vh; dy++) {
+        for (let dx = 0; dx < step && x+dx < vw; dx++) {
+          const idx = ((y+dy)*vw + (x+dx))*4;
+          data[idx]=r; data[idx+1]=g; data[idx+2]=b; data[idx+3]=a;
+        }
+      }
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  // Glow orbs
+  const gx1 = vw*0.3+Math.sin(t*0.7)*80, gy1 = vh*0.35+Math.cos(t*0.5)*40;
+  const g1 = ctx.createRadialGradient(gx1,gy1,0,gx1,gy1,vw*0.35);
+  g1.addColorStop(0,'rgba(94,234,212,0.045)'); g1.addColorStop(1,'transparent');
+  ctx.fillStyle = g1; ctx.fillRect(0,0,vw,vh);
+
+  const gx2 = vw*0.7+Math.cos(t*0.6)*60, gy2 = vh*0.55+Math.sin(t*0.4)*50;
+  const g2 = ctx.createRadialGradient(gx2,gy2,0,gx2,gy2,vw*0.3);
+  g2.addColorStop(0,'rgba(180,160,100,0.02)'); g2.addColorStop(1,'transparent');
+  ctx.fillStyle = g2; ctx.fillRect(0,0,vw,vh);
+
+  // Particles
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.phase += 0.01;
+    if (p.y < -10) { p.y = vh+10; p.x = Math.random()*vw; }
+    if (p.x < -10) p.x = vw+10;
+    if (p.x > vw+10) p.x = -10;
+    const flicker = 0.6 + 0.4*Math.sin(p.phase);
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(94,234,212,${p.alpha*flicker})`;
+    ctx.fill();
+  });
+
+  // Vignette
+  const vig = ctx.createRadialGradient(vw/2,vh/2,vh*0.3,vw/2,vh/2,vw*0.75);
+  vig.addColorStop(0,'transparent'); vig.addColorStop(1,'rgba(4,6,16,0.5)');
+  ctx.fillStyle = vig; ctx.fillRect(0,0,vw,vh);
+
+  requestAnimationFrame(loop);
+}
+
+document.fonts.ready.then(() => setTimeout(loop, 100));
+</script>
+</body>
+</html>

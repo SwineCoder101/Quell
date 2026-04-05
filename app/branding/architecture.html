@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Tranquille Architecture</title>
+<style>
+  body { margin: 0; padding: 40px; background: #faf7f1; font-family: system-ui; }
+  #diagram { display: flex; justify-content: center; }
+</style>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    themeVariables: {
+      primaryColor: '#fff3e6',
+      primaryTextColor: '#2a2520',
+      primaryBorderColor: '#e89b30',
+      secondaryColor: '#fff0f0',
+      secondaryTextColor: '#2a2520',
+      secondaryBorderColor: '#e85d4a',
+      tertiaryColor: '#f0faf5',
+      tertiaryTextColor: '#2a2520',
+      tertiaryBorderColor: '#3aab7a',
+      lineColor: '#c4a882',
+      fontFamily: 'system-ui, sans-serif',
+      fontSize: '14px',
+      noteBkgColor: '#faf7f1',
+      noteBorderColor: '#c4a882',
+      noteTextColor: '#5a5045',
+      edgeLabelBackground: '#faf7f1',
+    },
+    flowchart: {
+      curve: 'basis',
+      padding: 20,
+      nodeSpacing: 30,
+      rankSpacing: 50,
+      htmlLabels: true,
+      useMaxWidth: false,
+    }
+  });
+</script>
+</head>
+<body>
+<div id="diagram">
+<pre class="mermaid">
+flowchart TB
+  subgraph USER["🏖️ User"]
+    direction LR
+    WALLET["🔐 Wallet<br/><i>RainbowKit + wagmi v2</i>"]
+    BROWSER["🌐 Browser"]
+  end
+
+  subgraph FRONTEND["⛱️ Tranquille Frontend — Next.js 16 + React 19"]
+    direction TB
+
+    subgraph SHELL["Application Shell"]
+      PAGE["page.tsx<br/><i>Tab Navigation + Layout</i>"]
+    end
+
+    subgraph VIEWS["UI Panels"]
+      direction LR
+      PORTFOLIO["📊 PortfolioPanel<br/><i>Holdings + Donut Chart</i>"]
+      POOLS["🏊 PoolsDashboard<br/><i>V3/V4 Pool Browser</i>"]
+      BATCH["⚡ BatchSwapPanel<br/><i>EIP-5792 Batch Execution</i>"]
+      SWAP["🔄 SwapPanel<br/><i>Single Swap + Permit</i>"]
+    end
+
+    subgraph AI_PANEL["AI Strategy Engine"]
+      direction TB
+      CHAT["🧠 StrategyChat<br/><i>useChat + Streaming</i>"]
+      CARD["💡 TradeSuggestionCard<br/><i>Renders AI Suggestions</i>"]
+      CHAT --> CARD
+    end
+
+    subgraph SETTLE["Cross-Chain Settlement"]
+      SETTLE_BTN["🌉 SettleButton"]
+      CCTP_HOOK["useFundWallet<br/><i>CCTP V2 State Machine</i>"]
+      GW_HOOK["useGatewayTransfer<br/><i>Gateway State Machine</i>"]
+      SETTLE_BTN --> CCTP_HOOK
+      SETTLE_BTN --> GW_HOOK
+    end
+
+    subgraph HOOKS["Data Layer"]
+      BALANCES["useTokenBalances<br/><i>Pinned Sepolia Client</i>"]
+      TOKEN_CFG["token-config.ts<br/><i>20 Tokens + Pair Graph</i>"]
+      POOL_CFG["pool-config.ts<br/><i>V3/V4 Pool Registry</i>"]
+      API_LIB["uniswap-api.ts<br/><i>Typed API Wrappers</i>"]
+    end
+
+    PAGE --> PORTFOLIO
+    PAGE --> POOLS
+    PAGE --> BATCH
+    PAGE --> SWAP
+    PAGE --> CHAT
+
+    CARD -->|"applyTrades()"| BATCH
+    BATCH --> API_LIB
+    SWAP --> API_LIB
+    BATCH --> SETTLE_BTN
+    SWAP --> SETTLE_BTN
+    PORTFOLIO --> BALANCES
+    CHAT --> BALANCES
+    POOLS --> POOL_CFG
+    API_LIB --> TOKEN_CFG
+  end
+
+  subgraph SERVER["🖥️ Next.js API Routes — Server Side"]
+    direction LR
+    CHAT_API["/api/chat<br/><i>System Prompt Builder</i>"]
+    QUOTE_API["/api/uniswap/quote"]
+    SWAP_API["/api/uniswap/swap"]
+    BATCH_API["/api/uniswap/swap_5792"]
+    APPROVAL_API["/api/uniswap/check_approval"]
+  end
+
+  subgraph EXTERNAL["🌍 External Services"]
+    direction TB
+
+    subgraph UNISWAP["Uniswap Protocol"]
+      UNI_API["Trading API<br/><i>trade-api.gateway.uniswap.org</i>"]
+      UNI_ROUTER["Universal Router v2<br/><i>On-Chain Execution</i>"]
+      V3_POOLS["V3 Pools<br/><i>15+ Sepolia Pools</i>"]
+      V4_PM["V4 PoolManager<br/><i>Display Only</i>"]
+    end
+
+    subgraph ANTHROPIC["Anthropic"]
+      CLAUDE["Claude Sonnet 4<br/><i>suggest_trades Tool</i>"]
+    end
+
+    subgraph CIRCLE["Circle"]
+      CCTP_CONTRACT["TokenMessengerV2<br/><i>Burn & Mint USDC</i>"]
+      GW_WALLET["GatewayWallet<br/><i>Deposit + EIP-712</i>"]
+      GW_API["Gateway API<br/><i>gateway-api-testnet.circle.com</i>"]
+      GW_MINTER["GatewayMinter<br/><i>Mint on Arc</i>"]
+    end
+  end
+
+  subgraph CHAINS["⛓️ Blockchains"]
+    direction LR
+    SEPOLIA["Ethereum Sepolia<br/><i>Chain 11155111</i>"]
+    ARC["Arc Testnet<br/><i>Chain 5042002</i>"]
+  end
+
+  %% User connections
+  BROWSER --> PAGE
+  WALLET --> BATCH
+  WALLET --> SWAP
+  WALLET --> SETTLE_BTN
+
+  %% Frontend to Server
+  CHAT --> CHAT_API
+  API_LIB --> QUOTE_API
+  API_LIB --> SWAP_API
+  API_LIB --> BATCH_API
+  API_LIB --> APPROVAL_API
+
+  %% Server to External
+  CHAT_API -->|"streamText()"| CLAUDE
+  QUOTE_API -->|"POST /quote"| UNI_API
+  SWAP_API -->|"POST /swap"| UNI_API
+  BATCH_API -->|"POST /swap_5792"| UNI_API
+  APPROVAL_API -->|"POST /check_approval"| UNI_API
+
+  %% Uniswap on-chain
+  UNI_API --> UNI_ROUTER
+  UNI_ROUTER --> V3_POOLS
+
+  %% Settlement flows
+  CCTP_HOOK -->|"depositForBurn()"| CCTP_CONTRACT
+  GW_HOOK -->|"deposit()"| GW_WALLET
+  GW_HOOK -->|"POST /transfer"| GW_API
+  GW_HOOK -->|"gatewayMint()"| GW_MINTER
+
+  %% Chain connections
+  V3_POOLS --> SEPOLIA
+  V4_PM --> SEPOLIA
+  CCTP_CONTRACT --> SEPOLIA
+  GW_WALLET --> SEPOLIA
+  GW_MINTER --> ARC
+  CCTP_CONTRACT -.->|"~15-20 min"| ARC
+
+  %% Balance reads
+  BALANCES -->|"readContract()"| SEPOLIA
+  POOLS -->|"liquidity()"| SEPOLIA
+
+  %% Styling
+  classDef userNode fill:#ffecd2,stroke:#e89b30,stroke-width:2px,color:#2a2520
+  classDef frontNode fill:#fff8f0,stroke:#c4a882,stroke-width:1px,color:#2a2520
+  classDef serverNode fill:#f5f0e8,stroke:#b8a890,stroke-width:1px,color:#2a2520
+  classDef externalNode fill:#fff0f0,stroke:#e85d4a,stroke-width:1px,color:#2a2520
+  classDef chainNode fill:#f0faf5,stroke:#3aab7a,stroke-width:2px,color:#2a2520
+  classDef aiNode fill:#f5f0ff,stroke:#8b6cc1,stroke-width:1px,color:#2a2520
+
+  class WALLET,BROWSER userNode
+  class PAGE,PORTFOLIO,POOLS,BATCH,SWAP,CHAT,CARD,SETTLE_BTN,CCTP_HOOK,GW_HOOK,BALANCES,TOKEN_CFG,POOL_CFG,API_LIB frontNode
+  class CHAT_API,QUOTE_API,SWAP_API,BATCH_API,APPROVAL_API serverNode
+  class UNI_API,UNI_ROUTER,V3_POOLS,V4_PM,CCTP_CONTRACT,GW_WALLET,GW_API,GW_MINTER externalNode
+  class CLAUDE aiNode
+  class SEPOLIA,ARC chainNode
+</pre>
+</div>
+</body>
+</html>

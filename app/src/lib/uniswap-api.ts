@@ -99,9 +99,10 @@ export interface BatchSwapResponse {
 export async function getBatchSwap(
   quote: Record<string, unknown>,
   permitData?: Record<string, unknown> | null,
-  urgency: "normal" | "fast" | "urgent" = "urgent",
+  urgency?: "normal" | "fast" | "urgent",
 ): Promise<BatchSwapResponse> {
-  const body: Record<string, unknown> = { quote, urgency };
+  const resolvedUrgency = urgency ?? "urgent";
+  const body: Record<string, unknown> = { quote, urgency: resolvedUrgency };
 
   // Only include permitData if it's a non-null object
   if (permitData && typeof permitData === "object") {

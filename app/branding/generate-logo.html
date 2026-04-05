@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; }
+  body { width: 512px; height: 512px; overflow: hidden; }
+  canvas { display: block; width: 512px; height: 512px; }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+</head>
+<body>
+<canvas id="logo" width="1024" height="1024"></canvas>
+<script>
+const canvas = document.getElementById('logo');
+const ctx = canvas.getContext('2d');
+const S = 1024; // 2x for retina
+
+function draw() {
+  // ── Background — warm linen with subtle grain texture ──
+  const bgGrad = ctx.createLinearGradient(0, 0, S * 0.3, S);
+  bgGrad.addColorStop(0, '#faf7f1');
+  bgGrad.addColorStop(0.5, '#f7f2ea');
+  bgGrad.addColorStop(1, '#f4efe5');
+  ctx.fillStyle = bgGrad;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, S, S, 80);
+  ctx.fill();
+  ctx.clip(); // clip all content to rounded rect
+
+  // ── Subtle noise texture ──
+  for (let i = 0; i < 12000; i++) {
+    const x = Math.random() * S;
+    const y = Math.random() * S;
+    ctx.fillStyle = `rgba(180, 160, 130, ${Math.random() * 0.03})`;
+    ctx.fillRect(x, y, 1, 1);
+  }
+
+  // ── Warm ambient glow behind umbrella ──
+  const glow = ctx.createRadialGradient(S * 0.5, S * 0.32, 0, S * 0.5, S * 0.32, S * 0.35);
+  glow.addColorStop(0, 'rgba(255, 179, 71, 0.08)');
+  glow.addColorStop(0.6, 'rgba(232, 93, 74, 0.03)');
+  glow.addColorStop(1, 'transparent');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, S, S);
+
+  // ── Umbrella icon — large, centered ──
+  const umbrellaScale = 18;
+  const ux = S / 2 - 16 * umbrellaScale;
+  const uy = 40;
+
+  ctx.save();
+  ctx.translate(ux, uy);
+  ctx.scale(umbrellaScale, umbrellaScale);
+
+  // Canopy left — coral to amber
+  const gradL = ctx.createLinearGradient(4, 2, 16, 16);
+  gradL.addColorStop(0, '#e85d4a');
+  gradL.addColorStop(1, '#eda63a');
+  ctx.fillStyle = gradL;
+  ctx.beginPath();
+  ctx.moveTo(16, 3);
+  ctx.bezierCurveTo(9.4, 3, 4, 8.2, 4, 16);
+  ctx.lineTo(16, 16);
+  ctx.closePath();
+  ctx.fill();
+
+  // Canopy right — amber to peach
+  const gradR = ctx.createLinearGradient(16, 2, 28, 16);
+  gradR.addColorStop(0, '#eda63a');
+  gradR.addColorStop(1, '#fcd9a8');
+  ctx.fillStyle = gradR;
+  ctx.beginPath();
+  ctx.moveTo(16, 3);
+  ctx.bezierCurveTo(22.6, 3, 28, 8.2, 28, 16);
+  ctx.lineTo(16, 16);
+  ctx.closePath();
+  ctx.fill();
+
+  // Subtle canopy highlight
+  const highlight = ctx.createLinearGradient(10, 3, 14, 10);
+  highlight.addColorStop(0, 'rgba(255,255,255,0.2)');
+  highlight.addColorStop(1, 'transparent');
+  ctx.fillStyle = highlight;
+  ctx.beginPath();
+  ctx.moveTo(16, 3);
+  ctx.bezierCurveTo(12, 3, 8, 6, 7, 10);
+  ctx.lineTo(12, 10);
+  ctx.lineTo(16, 3);
+  ctx.closePath();
+  ctx.fill();
+
+  // Pole
+  ctx.strokeStyle = '#bfa87a';
+  ctx.lineWidth = 1.6;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(16, 4);
+  ctx.lineTo(16, 29);
+  ctx.stroke();
+
+  // Hook
+  ctx.beginPath();
+  ctx.moveTo(16, 29);
+  ctx.bezierCurveTo(16, 26.5, 18.5, 25.2, 20, 25.2);
+  ctx.stroke();
+
+  // Canopy edge shadow
+  ctx.strokeStyle = 'rgba(180, 120, 60, 0.12)';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(4, 16);
+  ctx.bezierCurveTo(4, 8.2, 9.4, 3, 16, 3);
+  ctx.bezierCurveTo(22.6, 3, 28, 8.2, 28, 16);
+  ctx.stroke();
+
+  ctx.restore();
+
+  // ── Title ──
+  ctx.font = 'italic 130px "Instrument Serif", Georgia, serif';
+  ctx.fillStyle = '#2a2520';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Tranquille', S / 2, S * 0.75);
+
+  // ── Thin decorative line ──
+  const lineY = S * 0.83;
+  const lineGrad = ctx.createLinearGradient(S * 0.2, 0, S * 0.8, 0);
+  lineGrad.addColorStop(0, 'transparent');
+  lineGrad.addColorStop(0.5, 'rgba(196, 168, 130, 0.3)');
+  lineGrad.addColorStop(1, 'transparent');
+  ctx.strokeStyle = lineGrad;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(S * 0.2, lineY);
+  ctx.lineTo(S * 0.8, lineY);
+  ctx.stroke();
+
+  // ── Tagline ──
+  ctx.font = 'italic 30px "Instrument Serif", Georgia, serif';
+  ctx.fillStyle = '#b8a890';
+  ctx.fillText('AI-powered batch trading for DeFi', S / 2, S * 0.89);
+}
+
+document.fonts.ready.then(() => setTimeout(draw, 300));
+</script>
+</body>
+</html>

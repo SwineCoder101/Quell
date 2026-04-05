@@ -169,7 +169,68 @@ export default function Home() {
                 Agent
               </button>
             )}
-            <ConnectButton />
+            <ConnectButton.Custom>
+              {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
+                const connected = mounted && account && chain;
+                if (!connected) {
+                  return (
+                    <button
+                      onClick={openConnectModal}
+                      className="text-[12px] font-medium px-4 py-1.5 rounded-full transition-all duration-200"
+                      style={{
+                        background: '#e85d4a',
+                        color: '#fff',
+                      }}
+                    >
+                      Connect
+                    </button>
+                  );
+                }
+                return (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={openChainModal}
+                      className="flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full transition-all duration-200"
+                      style={{
+                        color: '#5a5045',
+                        border: '1px solid rgba(42,37,32,0.08)',
+                        background: 'rgba(42,37,32,0.02)',
+                      }}
+                    >
+                      {chain.hasIcon && chain.iconUrl && (
+                        <img src={chain.iconUrl} alt="" className="w-3.5 h-3.5 rounded-full" />
+                      )}
+                      <span className="font-mono tracking-tight">{chain.name}</span>
+                    </button>
+                    <button
+                      onClick={openAccountModal}
+                      className="flex items-center gap-2 text-[11px] px-3 py-1 rounded-full transition-all duration-200"
+                      style={{
+                        color: '#2a2520',
+                        border: '1px solid rgba(42,37,32,0.08)',
+                        background: 'rgba(42,37,32,0.02)',
+                      }}
+                    >
+                      {account.displayBalance && (
+                        <span className="font-mono" style={{ color: '#5a5045' }}>
+                          {account.displayBalance}
+                        </span>
+                      )}
+                      <span
+                        className="font-mono px-1.5 py-0.5 rounded-full"
+                        style={{
+                          background: 'rgba(232,93,74,0.06)',
+                          color: '#e85d4a',
+                          fontSize: '10px',
+                        }}
+                      >
+                        {account.displayName}
+                      </span>
+                    </button>
+                  </div>
+                );
+              }}
+            </ConnectButton.Custom>
           </div>
         </header>
 
