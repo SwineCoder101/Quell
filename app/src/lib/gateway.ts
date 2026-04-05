@@ -1,4 +1,4 @@
-// Circle Gateway configuration for fast cross-chain USDC transfers (EIP-712 based)
+// Circle Gateway configuration for cross-chain USDC transfers (EIP-712 based)
 
 export const GATEWAY_API_URL = "https://gateway-api-testnet.circle.com/v1/transfer";
 
@@ -21,31 +21,16 @@ export const ethereumSepoliaConfig: GatewayChainConfig = {
   finalityTime: 5,
 };
 
-
 export const ARC_DOMAIN = 26;
 export const ARC_USDC = "0x3600000000000000000000000000000000000000" as const;
+export const ARC_CHAIN_ID = 5042002;
 
-// EIP-712 types for BurnIntent
-export const BURN_INTENT_TYPES = {
-  BurnIntent: [
-    { name: "sender", type: "address" },
-    { name: "nonce", type: "uint256" },
-    { name: "burnToken", type: "address" },
-    { name: "amount", type: "uint256" },
-    { name: "destinationDomain", type: "uint32" },
-    { name: "mintRecipient", type: "bytes32" },
-    { name: "maxFee", type: "uint256" },
-  ],
-} as const;
-
+// Gateway Wallet ABI — deposit(address token, uint256 value) is the actual on-chain function
 export const GATEWAY_WALLET_ABI = [
   {
     inputs: [
-      { name: "burnToken", type: "address" },
-      { name: "amount", type: "uint256" },
-      { name: "destinationDomain", type: "uint32" },
-      { name: "mintRecipient", type: "bytes32" },
-      { name: "maxFee", type: "uint256" },
+      { name: "token", type: "address" },
+      { name: "value", type: "uint256" },
     ],
     name: "deposit",
     outputs: [],
@@ -61,14 +46,36 @@ export const GATEWAY_WALLET_ABI = [
   },
 ] as const;
 
+// EIP-712 types for BurnIntent — used for signing the transfer intent off-chain
+export const BURN_INTENT_TYPES = {
+  BurnIntent: [
+    { name: "maxBlockHeight", type: "uint256" },
+    { name: "maxFee", type: "uint256" },
+    { name: "spec", type: "TransferSpec" },
+  ],
+  TransferSpec: [
+    { name: "version", type: "uint32" },
+    { name: "sourceDomain", type: "uint32" },
+    { name: "destinationDomain", type: "uint32" },
+    { name: "sourceContract", type: "bytes32" },
+    { name: "destinationContract", type: "bytes32" },
+    { name: "sourceToken", type: "bytes32" },
+    { name: "destinationToken", type: "bytes32" },
+    { name: "sourceDepositor", type: "bytes32" },
+    { name: "destinationRecipient", type: "bytes32" },
+    { name: "sourceSigner", type: "bytes32" },
+    { name: "destinationCaller", type: "bytes32" },
+    { name: "value", type: "uint256" },
+    { name: "salt", type: "bytes32" },
+    { name: "hookData", type: "bytes" },
+  ],
+} as const;
+
 export const GATEWAY_MINTER_ABI = [
   {
     inputs: [
-      { name: "amount", type: "uint256" },
-      { name: "fee", type: "uint256" },
-      { name: "burnSource", type: "bytes32" },
-      { name: "mintRecipient", type: "address" },
-      { name: "attestation", type: "bytes" },
+      { name: "attestationPayload", type: "bytes" },
+      { name: "signature", type: "bytes" },
     ],
     name: "gatewayMint",
     outputs: [],

@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useAccount, usePublicClient } from "wagmi";
-import { formatUnits, erc20Abi } from "viem";
+import { useAccount } from "wagmi";
+import { createPublicClient, http, formatUnits, erc20Abi } from "viem";
+import { sepolia } from "wagmi/chains";
 import { TOKEN_LIST } from "@/lib/token-config";
+
+// Pinned to Sepolia so balances work even when wallet is on Arc
+const sepoliaClient = createPublicClient({
+  chain: sepolia,
+  transport: http(),
+});
 
 export interface TokenBalance {
   symbol: string;
@@ -16,21 +23,20 @@ export interface TokenBalance {
 
 export function useTokenBalances() {
   const { address, isConnected } = useAccount();
-  const publicClient = usePublicClient();
 
   const [balances, setBalances] = useState<TokenBalance[]>([]);
   const [loading, setLoading] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchBalances = useCallback(async () => {
-    if (!address || !publicClient) return;
+    if (!address) return;
     setLoading(true);
 
     try {
       const [ethBalance, ...tokenResults] = await Promise.all([
-        publicClient.getBalance({ address }),
+        sepoliaClient.getBalance({ address }),
         ...TOKEN_LIST.map((token) =>
-          publicClient.readContract({
+          sepoliaClient.readContract({
             address: token.address,
             abi: erc20Abi,
             functionName: "balanceOf",
@@ -65,7 +71,7 @@ export function useTokenBalances() {
     } finally {
       setLoading(false);
     }
-  }, [address, publicClient]);
+  }, [address]);
 
   useEffect(() => {
     fetchBalances();

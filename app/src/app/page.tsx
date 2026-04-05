@@ -31,20 +31,12 @@ const NAV_ITEMS: { key: Tab; label: string; icon: React.ReactNode }[] = [
     ),
   },
   {
-    key: "swap",
-    label: "Swap",
-    icon: (
-      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-      </svg>
-    ),
-  },
-  {
     key: "batch",
     label: "Batch Swap",
     icon: (
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16V4m0 0l-4 4m4-4l4 4" />
       </svg>
     ),
   },
@@ -64,26 +56,54 @@ export default function Home() {
   return (
     <div className="flex min-h-screen">
       {/* Left Sidebar */}
-      <aside className="w-56 flex-shrink-0 border-r border-cex-border bg-cex-surface flex flex-col">
+      <aside className="w-52 flex-shrink-0 flex flex-col">
         {/* Logo */}
-        <div className="flex items-center gap-2 px-5 h-14 border-b border-cex-border">
-          <div className="w-6 h-6 rounded bg-cex-gold flex items-center justify-center">
-            <span className="text-[#0b0e11] font-black text-xs">Q</span>
-          </div>
-          <span className="text-base font-bold text-foreground tracking-tight">Quell</span>
+        <div className="flex items-center gap-2.5 px-5 h-14" style={{ borderBottom: '1px solid rgba(42,37,32,0.06)' }}>
+          {/* Beach umbrella icon */}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C7 2 3 6.5 3 12h9V2z" fill="url(#umbrella-left)" opacity="0.9"/>
+            <path d="M12 2c5 0 9 4.5 9 10h-9V2z" fill="url(#umbrella-right)" opacity="0.9"/>
+            <line x1="12" y1="2" x2="12" y2="22" stroke="#c4a882" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M12 22c0-2 2-3 3-3" stroke="#c4a882" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+            <defs>
+              <linearGradient id="umbrella-left" x1="3" y1="2" x2="12" y2="12">
+                <stop offset="0%" stopColor="#e85d4a"/>
+                <stop offset="100%" stopColor="#e89b30"/>
+              </linearGradient>
+              <linearGradient id="umbrella-right" x1="12" y1="2" x2="21" y2="12">
+                <stop offset="0%" stopColor="#e89b30"/>
+                <stop offset="100%" stopColor="#ffd4a8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span
+            className="text-[17px] italic"
+            style={{ fontFamily: 'var(--font-instrument-serif), Georgia, serif', color: '#2a2520' }}
+          >
+            Tranquille
+          </span>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-3 px-3 space-y-0.5">
+        <nav className="flex-1 py-4 px-2.5 space-y-0.5">
           {NAV_ITEMS.map((item) => (
             <button
               key={item.key}
               onClick={() => setActiveTab(item.key)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm transition ${
+              className={`w-full flex items-center gap-3 px-3 py-2 text-[13px] transition-all duration-200 ${
                 activeTab === item.key
-                  ? "bg-cex-gold/10 text-cex-gold font-medium"
-                  : "text-cex-secondary hover:text-foreground hover:bg-cex-surface-hover"
+                  ? "text-[#e85d4a] font-medium"
+                  : "text-[#8a7e70] hover:text-[#5a5045]"
               }`}
+              style={
+                activeTab === item.key
+                  ? {
+                      background: 'rgba(232,93,74,0.06)',
+                      borderRadius: '0 8px 8px 0',
+                      boxShadow: 'inset 2px 0 0 #e85d4a',
+                    }
+                  : { borderRadius: '8px' }
+              }
             >
               {item.icon}
               {item.label}
@@ -92,23 +112,32 @@ export default function Home() {
         </nav>
 
         {/* Sidebar footer */}
-        <div className="px-4 py-3 border-t border-cex-border">
-          <div className="text-[10px] text-cex-tertiary">
-            Powered by Uniswap V3 + V4
+        <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(42,37,32,0.06)' }}>
+          <div className="text-[9px] font-mono tracking-[0.15em] uppercase" style={{ color: '#b8ad9e' }}>
+            Uniswap V3 + V4
           </div>
-          <div className="text-[10px] text-cex-tertiary mt-0.5">Sepolia Testnet</div>
+          <div className="text-[9px] font-mono tracking-[0.15em] uppercase mt-1" style={{ color: '#cec4b5' }}>
+            Sepolia Testnet
+          </div>
         </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Header Bar */}
-        <header className="flex items-center justify-between px-6 h-14 border-b border-cex-border bg-cex-surface">
-          <div className="flex items-center gap-4">
-            <h2 className="text-sm font-semibold text-foreground">
+        <header className="flex items-center justify-between px-6 h-12" style={{ borderBottom: '1px solid rgba(42,37,32,0.06)' }}>
+          <div className="flex items-center gap-3">
+            <h2 className="text-[13px] font-medium text-foreground tracking-tight">
               {NAV_ITEMS.find((n) => n.key === activeTab)?.label}
             </h2>
-            <span className="text-[10px] bg-cex-gold/15 text-cex-gold px-2 py-0.5 rounded font-medium">
+            <span
+              className="text-[9px] px-2 py-0.5 rounded-full font-mono tracking-[0.12em] uppercase"
+              style={{
+                background: 'rgba(232,155,48,0.08)',
+                color: '#c07d20',
+                border: '1px solid rgba(232,155,48,0.15)',
+              }}
+            >
               Sepolia
             </span>
           </div>
@@ -116,13 +145,27 @@ export default function Home() {
             {activeTab === "batch" && (
               <button
                 onClick={() => setChatOpen(!chatOpen)}
-                className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded transition ${
+                className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full transition-all duration-200"
+                style={
                   chatOpen
-                    ? "bg-cex-gold/10 text-cex-gold"
-                    : "text-cex-secondary hover:text-foreground bg-cex-surface-hover"
-                }`}
+                    ? {
+                        background: 'rgba(232,93,74,0.06)',
+                        color: '#e85d4a',
+                        border: '1px solid rgba(232,93,74,0.15)',
+                      }
+                    : {
+                        color: '#8a7e70',
+                        border: '1px solid rgba(42,37,32,0.08)',
+                      }
+                }
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-cex-gold" />
+                <div
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{
+                    background: chatOpen ? '#e85d4a' : '#b8ad9e',
+                    boxShadow: chatOpen ? '0 0 6px rgba(232,93,74,0.3)' : 'none',
+                  }}
+                />
                 Agent
               </button>
             )}

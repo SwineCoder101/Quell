@@ -2,7 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
-import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
+import { RainbowKitProvider, lightTheme } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import { config } from "@/lib/wagmi";
 import { sepolia } from "wagmi/chains";
@@ -17,14 +17,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider
           initialChain={sepolia}
-          theme={darkTheme({
-            accentColor: "#f0b90b",
-            accentColorForeground: "#0b0e11",
-            borderRadius: "small",
+          theme={lightTheme({
+            accentColor: "#f0a050",
+            accentColorForeground: "#ffffff",
+            borderRadius: "medium",
+            fontStack: "system",
+            overlayBlur: "small",
           })}
         >
           {children}
-          <Toaster theme="dark" position="bottom-right" richColors />
+          <Toaster theme="light" position="bottom-right" richColors />
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>

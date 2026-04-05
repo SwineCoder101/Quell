@@ -1,61 +1,129 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b0e11;
-  --foreground: #eaecef;
-  --cex-gold: #f0b90b;
-  --cex-gold-dim: #f0b90b33;
-  --cex-surface: #1e2329;
-  --cex-surface-hover: #2b3139;
-  --cex-border: #2b3139;
-  --cex-text-secondary: #848e9c;
-  --cex-text-tertiary: #5e6673;
-  --cex-green: #0ecb81;
-  --cex-red: #f6465d;
+  --background: #faf6f0;
+  --foreground: #2a2520;
+  --tq-coral: #e85d4a;
+  --tq-amber: #e89b30;
+  --tq-peach: #ffd4a8;
+  --tq-sand: #d4c4a8;
+  --tq-surface: #f2ece3;
+  --tq-surface-hover: #ebe4d9;
+  --tq-border: rgba(42, 37, 32, 0.08);
+  --tq-text-secondary: #8a7e70;
+  --tq-text-tertiary: #b8ad9e;
+  --tq-green: #3aab7a;
+  --tq-red: #e85d4a;
+  --tq-gold: #e89b30;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-cex-gold: var(--cex-gold);
-  --color-cex-gold-dim: var(--cex-gold-dim);
-  --color-cex-surface: var(--cex-surface);
-  --color-cex-surface-hover: var(--cex-surface-hover);
-  --color-cex-border: var(--cex-border);
-  --color-cex-secondary: var(--cex-text-secondary);
-  --color-cex-tertiary: var(--cex-text-tertiary);
-  --color-cex-green: var(--cex-green);
-  --color-cex-red: var(--cex-red);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-cex-gold: var(--tq-coral);
+  --color-cex-gold-dim: rgba(232, 93, 74, 0.1);
+  --color-cex-surface: var(--tq-surface);
+  --color-cex-surface-hover: var(--tq-surface-hover);
+  --color-cex-border: var(--tq-border);
+  --color-cex-secondary: var(--tq-text-secondary);
+  --color-cex-tertiary: var(--tq-text-tertiary);
+  --color-cex-green: var(--tq-green);
+  --color-cex-red: var(--tq-red);
+  --font-sans: var(--font-dm-sans);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-size: 110%;
 }
 
-/* Scrollbar styling for CEX feel */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--cex-border);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--cex-text-tertiary);
-}
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(42, 37, 32, 0.1); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(42, 37, 32, 0.2); }
 
-/* Select dropdown styling */
+/* ── Select dropdowns ── */
 select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23848e9c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a7e70' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
   padding-right: 28px;
+}
+
+/* ── Light sunset overrides ── */
+
+aside {
+  background: #f5efe5 !important;
+  border-right: 1px solid rgba(42, 37, 32, 0.06) !important;
+}
+
+header {
+  background: rgba(250, 246, 240, 0.9) !important;
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(42, 37, 32, 0.06) !important;
+}
+
+main {
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 10%, rgba(232, 93, 74, 0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 80%, rgba(232, 155, 48, 0.025) 0%, transparent 60%),
+    var(--background);
+}
+
+/* Tables */
+table tr {
+  border-bottom-color: rgba(42, 37, 32, 0.05) !important;
+}
+table th {
+  color: var(--tq-text-tertiary) !important;
+  font-family: var(--font-mono), monospace !important;
+  font-size: 10px !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+}
+
+/* Cards */
+[class*="rounded"][class*="border"][class*="bg-cex-surface"] {
+  background: rgba(242, 236, 227, 0.6) !important;
+  border-color: rgba(42, 37, 32, 0.06) !important;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="number"],
+input:not([type]) {
+  background: rgba(255, 253, 250, 0.8) !important;
+  border-color: rgba(42, 37, 32, 0.08) !important;
+  caret-color: var(--tq-coral);
+  color: var(--foreground) !important;
+}
+input:focus {
+  border-color: rgba(232, 93, 74, 0.3) !important;
+  box-shadow: 0 0 0 2px rgba(232, 93, 74, 0.06) !important;
+  outline: none !important;
+}
+
+/* Active nav */
+nav button[class*="bg-cex-gold"] {
+  background: rgba(232, 93, 74, 0.06) !important;
+}
+
+/* Badge pills */
+span[class*="bg-cex-gold"] {
+  background: rgba(232, 155, 48, 0.08) !important;
+  color: #c07d20 !important;
+  border: 1px solid rgba(232, 155, 48, 0.15);
+  font-family: var(--font-mono), monospace;
+  font-size: 9px !important;
+  letter-spacing: 1.5px;
+}
+
+/* Chart — slightly desaturate */
+canvas {
+  filter: saturate(0.8);
 }

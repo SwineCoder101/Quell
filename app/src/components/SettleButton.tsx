@@ -1,16 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { useAccount, useSwitchChain } from "wagmi";
+import { useState, useEffect, useCallback } from "react";
+import { useAccount, useSwitchChain, usePublicClient } from "wagmi";
+import { formatUnits, erc20Abi } from "viem";
 import { useFundWallet } from "@/hooks/useFundWallet";
 import { useGatewayTransfer } from "@/hooks/useGatewayTransfer";
 import { ethereumSepoliaConfig } from "@/lib/gateway";
+import { OFFICIAL_USDC_ADDRESS } from "@/lib/token-config";
 
 type Method = "cctp" | "gateway";
+
+const METHODS: { key: Method; label: string; speed: string; fee: string; description: string }[] = [
+  {
+    key: "cctp",
+    label: "CCTP V2",
+    speed: "~15-20 min",
+    fee: "No fee",
+    description: "Burns USDC on Ethereum Sepolia, then auto-mints on Arc.",
+  },
+  {
+    key: "gateway",
+    label: "Gateway",
+    speed: "~Instant",
+    fee: "~2% fee",
+    description: "Deposits into Circle Gateway for instant mint on Arc. Min 2.01 USDC.",
+  },
+];
+
+const PERCENTAGES = [25, 50, 75, 100] as const;
 
 export default function SettleButton() {
   const { address, isConnected, chain } = useAccount();
   const { switchChainAsync } = useSwitchChain();
+  const publicClient = usePublicClient();
 
   const {
     fundWallet,
@@ -32,6 +54,27 @@ export default function SettleButton() {
   const [open, setOpen] = useState(false);
   const [method, setMethod] = useState<Method>("cctp");
   const [amount, setAmount] = useState("");
+  const [usdcBalance, setUsdcBalance] = useState<{ formatted: string; display: string } | null>(null);
+
+  const fetchUsdcBalance = useCallback(async () => {
+    if (!address || !publicClient) return;
+    try {
+      const bal = await publicClient.readContract({
+        address: OFFICIAL_USDC_ADDRESS,
+        abi: erc20Abi,
+        functionName: "balanceOf",
+        args: [address],
+      });
+      const formatted = formatUnits(bal, 6);
+      setUsdcBalance({ formatted, display: parseFloat(formatted).toFixed(2) });
+    } catch {
+      setUsdcBalance(null);
+    }
+  }, [address, publicClient]);
+
+  useEffect(() => {
+    fetchUsdcBalance();
+  }, [fetchUsdcBalance]);
 
   if (!isConnected || !address) return null;
 
@@ -75,12 +118,23 @@ export default function SettleButton() {
     setAmount("");
   };
 
+  const setPercentage = (pct: number) => {
+    if (!usdcBalance) return;
+    const val = (parseFloat(usdcBalance.formatted) * pct) / 100;
+    setAmount(val > 0 ? val.toFixed(usdcBalance.formatted.includes(".") ? Math.min(6, usdcBalance.formatted.split(".")[1]?.length || 2) : 2) : "");
+  };
+
   const stepLabel: Record<string, string> = {
     approving: "Approving USDC...",
     depositing: method === "cctp" ? "Depositing for burn..." : "Depositing to Gateway...",
+    waiting: "Waiting for Gateway to confirm deposit...",
     signing: "Sign burn intent in wallet...",
     submitting: "Submitting to Circle Gateway...",
+    switching: "Switching to Arc testnet...",
+    minting: "Minting USDC on Arc...",
   };
+
+  const selectedMethod = METHODS.find((m) => m.key === method)!;
 
   return (
     <div className="mt-3">
@@ -103,55 +157,84 @@ export default function SettleButton() {
       </button>
 
       {open && (
-        <div className="mt-2 bg-cex-surface border border-cex-border rounded p-4 space-y-3">
-          {/* Method toggle */}
-          <div className="flex gap-px bg-cex-border rounded overflow-hidden">
-            <button
-              onClick={() => { setMethod("cctp"); handleReset(); }}
-              className={`flex-1 py-1.5 text-xs font-medium transition ${
-                method === "cctp"
-                  ? "bg-cex-gold/10 text-cex-gold"
-                  : "bg-cex-surface text-cex-secondary hover:text-foreground"
-              }`}
-            >
-              CCTP V2 (~15 min)
-            </button>
-            <button
-              onClick={() => { setMethod("gateway"); handleReset(); }}
-              className={`flex-1 py-1.5 text-xs font-medium transition ${
-                method === "gateway"
-                  ? "bg-cex-gold/10 text-cex-gold"
-                  : "bg-cex-surface text-cex-secondary hover:text-foreground"
-              }`}
-            >
-              Gateway (~instant, 2% fee)
-            </button>
+        <div className="mt-2 bg-cex-surface border border-cex-border rounded p-4 space-y-4">
+          {/* Method cards */}
+          <div className="grid grid-cols-2 gap-2">
+            {METHODS.map((m) => (
+              <button
+                key={m.key}
+                onClick={() => { setMethod(m.key); handleReset(); }}
+                className={`text-left p-3 rounded border transition ${
+                  method === m.key
+                    ? "border-cex-gold bg-cex-gold/5"
+                    : "border-cex-border bg-cex-surface-hover hover:border-cex-secondary"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-sm font-semibold ${method === m.key ? "text-cex-gold" : "text-foreground"}`}>
+                    {m.label}
+                  </span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${
+                    m.key === "gateway"
+                      ? "bg-cex-green/10 text-cex-green"
+                      : "bg-blue-500/10 text-blue-400"
+                  }`}>
+                    {m.speed}
+                  </span>
+                </div>
+                <div className="text-[11px] text-cex-tertiary">{m.fee}</div>
+              </button>
+            ))}
           </div>
 
-          {/* Info */}
-          <div className="text-xs text-cex-tertiary">
-            {method === "cctp"
-              ? "Burns USDC on Ethereum Sepolia → auto-mints on Arc. No fee, ~15-20 min."
-              : "Deposits into Circle Gateway → instant mint on Arc. ~2% fee (min 2.01 USDC)."}
+          {/* Description */}
+          <div className="text-xs text-cex-tertiary bg-cex-surface-hover rounded p-2.5">
+            {selectedMethod.description}
           </div>
 
-          {/* Amount */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="USDC amount"
-              className="flex-1 bg-cex-surface-hover text-foreground rounded px-3 py-2 text-sm border border-cex-border outline-none focus:border-cex-gold transition font-mono"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              disabled={isProcessing}
-            />
-            <button
-              onClick={handleSettle}
-              disabled={!amount || parseFloat(amount) <= 0 || isProcessing}
-              className="bg-cex-gold hover:bg-cex-gold/90 disabled:bg-cex-surface disabled:border disabled:border-cex-border disabled:text-cex-tertiary text-[#0b0e11] font-medium px-4 py-2 rounded text-sm transition"
-            >
-              Settle
-            </button>
+          {/* USDC Balance */}
+          {usdcBalance && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-cex-tertiary">Available USDC</span>
+              <span className="text-foreground font-mono">{usdcBalance.display} USDC</span>
+            </div>
+          )}
+
+          {/* Amount input + percentage tabs */}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="0.00"
+                className="flex-1 bg-cex-surface-hover text-foreground rounded px-3 py-2.5 text-sm border border-cex-border outline-none focus:border-cex-gold transition font-mono"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                disabled={isProcessing}
+              />
+              <button
+                onClick={handleSettle}
+                disabled={!amount || parseFloat(amount) <= 0 || isProcessing}
+                className="bg-cex-gold hover:bg-cex-gold/90 disabled:bg-cex-surface disabled:border disabled:border-cex-border disabled:text-cex-tertiary text-[#0b0e11] font-semibold px-5 py-2.5 rounded text-sm transition"
+              >
+                Settle
+              </button>
+            </div>
+
+            {/* Percentage tabs */}
+            {usdcBalance && parseFloat(usdcBalance.formatted) > 0 && (
+              <div className="flex gap-1">
+                {PERCENTAGES.map((pct) => (
+                  <button
+                    key={pct}
+                    onClick={() => setPercentage(pct)}
+                    disabled={isProcessing}
+                    className="flex-1 py-1 text-[11px] font-medium rounded border border-cex-border bg-cex-surface-hover text-cex-secondary hover:text-cex-gold hover:border-cex-gold/50 transition disabled:opacity-50"
+                  >
+                    {pct}%
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Status */}
@@ -166,7 +249,7 @@ export default function SettleButton() {
               <div className="text-sm text-cex-green font-medium">
                 {method === "cctp"
                   ? "USDC burn submitted! It will mint on Arc in ~15-20 minutes."
-                  : "Gateway transfer complete!"}
+                  : "USDC minted on Arc!"}
               </div>
               {txHash && (
                 <a

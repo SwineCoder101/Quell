@@ -52,7 +52,7 @@ function createTradeRow(): TradeRow {
   };
 }
 
-type BatchStep = "idle" | "quoting" | "quoted" | "executing" | "done" | "error";
+type BatchStep = "idle" | "quoting" | "quoted" | "executing" | "pending" | "done" | "error";
 
 export interface BatchSwapPanelHandle {
   applyTrades: (suggestions: TradeSuggestion[]) => void;
@@ -77,12 +77,14 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
   });
 
   useEffect(() => {
+    if (!callsStatus || toastShownRef.current) return;
+
     if (
-      callsStatus?.status === "success" &&
-      callsStatus.receipts?.length &&
-      !toastShownRef.current
+      callsStatus.status === "success" &&
+      callsStatus.receipts?.length
     ) {
       toastShownRef.current = true;
+      setBatchStep("done");
       const txHash = callsStatus.receipts[0].transactionHash;
       toast.success("Batch confirmed!", {
         description: "View transaction on Etherscan",
@@ -92,6 +94,9 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
         },
         duration: 10000,
       });
+    } else if (callsStatus.status === "failure") {
+      setBatchStep("error");
+      setBatchError("Transaction failed on-chain");
     }
   }, [callsStatus]);
 
@@ -252,7 +257,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
 
       toastShownRef.current = false;
       setTxId(result.id);
-      setBatchStep("done");
+      setBatchStep("pending");
     } catch (err) {
       setBatchError(err instanceof Error ? err.message : "Batch execution failed");
       setBatchStep("error");
@@ -447,11 +452,25 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
         ) : null}
       </div>
 
-      {/* Done */}
+      {/* Pending — waiting for on-chain confirmation */}
+      {batchStep === "pending" && (
+        <div className="text-center space-y-2 bg-cex-gold/5 border border-cex-gold/20 rounded p-4">
+          <div className="text-cex-gold font-semibold animate-pulse">
+            Waiting for on-chain confirmation...
+          </div>
+          {txId && (
+            <p className="text-xs text-cex-tertiary font-mono break-all">
+              Batch ID: {txId}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Done — confirmed on-chain */}
       {batchStep === "done" && (
         <div className="text-center space-y-2 bg-cex-green/5 border border-cex-green/20 rounded p-4">
           <div className="text-cex-green font-semibold">
-            Batch swap submitted!
+            Batch swap confirmed!
           </div>
           {txId && (
             <p className="text-xs text-cex-tertiary font-mono break-all">
@@ -490,100 +509,130 @@ function BatchPnL({ trades }: { trades: TradeRow[] }) {
 
   if (quotedTrades.length === 0 && failedTrades.length === 0) return null;
 
+  // Build per-trade flow data for the receipt
+  const tradeFlows = quotedTrades.map((t) => ({
+    sellSymbol: t.sellToken.symbol,
+    sellAmount: parseFloat(t.sellAmount) || 0,
+    buySymbol: t.buyToken.symbol,
+    buyAmount: parseFloat(t.outputAmount) || 0,
+  }));
+
+  // Aggregate totals
   const sellTotals = new Map<string, number>();
   const buyTotals = new Map<string, number>();
-
-  for (const t of quotedTrades) {
-    const sellAmt = parseFloat(t.sellAmount) || 0;
-    const buyAmt = parseFloat(t.outputAmount) || 0;
-    sellTotals.set(t.sellToken.symbol, (sellTotals.get(t.sellToken.symbol) || 0) + sellAmt);
-    buyTotals.set(t.buyToken.symbol, (buyTotals.get(t.buyToken.symbol) || 0) + buyAmt);
+  for (const f of tradeFlows) {
+    sellTotals.set(f.sellSymbol, (sellTotals.get(f.sellSymbol) || 0) + f.sellAmount);
+    buyTotals.set(f.buySymbol, (buyTotals.get(f.buySymbol) || 0) + f.buyAmount);
   }
 
   const netPositions = new Map<string, number>();
-  for (const [sym, amt] of sellTotals) {
-    netPositions.set(sym, (netPositions.get(sym) || 0) - amt);
-  }
-  for (const [sym, amt] of buyTotals) {
-    netPositions.set(sym, (netPositions.get(sym) || 0) + amt);
-  }
+  for (const [sym, amt] of sellTotals) netPositions.set(sym, (netPositions.get(sym) || 0) - amt);
+  for (const [sym, amt] of buyTotals) netPositions.set(sym, (netPositions.get(sym) || 0) + amt);
 
-  const sortedPositions = [...netPositions.entries()].sort((a, b) => b[1] - a[1]);
+  const gains = [...netPositions.entries()].filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+  const losses = [...netPositions.entries()].filter(([, v]) => v < 0).sort((a, b) => a[1] - b[1]);
+
+  const totalSwaps = quotedTrades.length;
 
   return (
-    <div className="bg-cex-surface border border-cex-border rounded p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">Batch Summary</h3>
-        <div className="flex gap-2 text-xs">
-          {quotedTrades.length > 0 && (
-            <span className="text-cex-green">{quotedTrades.length} quoted</span>
-          )}
+    <div className="relative overflow-hidden rounded border border-cex-border">
+      {/* Subtle gradient top accent */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cex-gold/40 to-transparent" />
+
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3.5 bg-cex-surface">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded bg-cex-gold/10 flex items-center justify-center">
+            <svg className="w-3.5 h-3.5 text-cex-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className="text-[13px] font-semibold text-foreground">Settlement Preview</h3>
+            <p className="text-[10px] text-cex-tertiary">
+              {totalSwaps} {totalSwaps === 1 ? "swap" : "swaps"} via Uniswap V3
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
           {failedTrades.length > 0 && (
-            <span className="text-cex-red">{failedTrades.length} failed</span>
+            <span className="text-[10px] bg-cex-red/10 text-cex-red px-2 py-0.5 rounded font-medium">
+              {failedTrades.length} failed
+            </span>
           )}
           {pendingTrades.length > 0 && (
-            <span className="text-cex-tertiary">{pendingTrades.length} pending</span>
+            <span className="text-[10px] bg-cex-surface-hover text-cex-tertiary px-2 py-0.5 rounded font-medium">
+              {pendingTrades.length} pending
+            </span>
           )}
         </div>
       </div>
 
-      {/* Sell */}
-      {sellTotals.size > 0 && (
-        <div className="space-y-1">
-          <p className="text-[10px] text-cex-tertiary uppercase tracking-wider">You spend</p>
-          <div className="flex flex-wrap gap-2">
-            {[...sellTotals.entries()].map(([sym, amt]) => (
-              <div key={`sell-${sym}`} className="flex items-center gap-1.5 bg-cex-red/5 border border-cex-red/15 rounded px-2.5 py-1.5">
-                <TokenIcon symbol={sym} size="sm" />
-                <span className="text-sm font-mono text-cex-red">-{formatPnL(amt)}</span>
-                <span className="text-xs text-cex-red/60">{sym}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Trade flow rows — each trade as a mini receipt line */}
+      <div className="border-t border-cex-border">
+        {tradeFlows.map((flow, i) => (
+          <div
+            key={i}
+            className={`grid grid-cols-[1fr_32px_1fr] items-center px-5 py-3 ${
+              i > 0 ? "border-t border-cex-border/40" : ""
+            } bg-background`}
+          >
+            {/* Sell side */}
+            <div className="flex items-center gap-2.5">
+              <TokenIcon symbol={flow.sellSymbol} size="sm" />
+              <span className="text-[13px] font-mono text-cex-red font-medium">
+                -{formatPnL(flow.sellAmount)}
+              </span>
+              <span className="text-[11px] text-cex-tertiary">{flow.sellSymbol}</span>
+            </div>
 
-      {/* Buy */}
-      {buyTotals.size > 0 && (
-        <div className="space-y-1">
-          <p className="text-[10px] text-cex-tertiary uppercase tracking-wider">You receive</p>
-          <div className="flex flex-wrap gap-2">
-            {[...buyTotals.entries()].map(([sym, amt]) => (
-              <div key={`buy-${sym}`} className="flex items-center gap-1.5 bg-cex-green/5 border border-cex-green/15 rounded px-2.5 py-1.5">
-                <TokenIcon symbol={sym} size="sm" />
-                <span className="text-sm font-mono text-cex-green">+{formatPnL(amt)}</span>
-                <span className="text-xs text-cex-green/60">{sym}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+            {/* Flow arrow */}
+            <div className="flex justify-center">
+              <svg className="w-4 h-4 text-cex-tertiary/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </div>
 
-      {/* Net */}
-      {sortedPositions.length > 0 && (
-        <div className="border-t border-cex-border pt-3 space-y-1">
-          <p className="text-[10px] text-cex-tertiary uppercase tracking-wider">Net Position</p>
-          <div className="flex flex-wrap gap-2">
-            {sortedPositions.map(([sym, net]) => (
-              <div
-                key={`net-${sym}`}
-                className={`flex items-center gap-1.5 rounded px-2.5 py-1.5 ${
-                  net > 0
-                    ? "bg-cex-green/5 border border-cex-green/10"
-                    : "bg-cex-red/5 border border-cex-red/10"
-                }`}
-              >
-                <TokenIcon symbol={sym} size="sm" />
-                <span
-                  className={`text-sm font-mono ${
-                    net > 0 ? "text-cex-green" : "text-cex-red"
-                  }`}
-                >
-                  {net > 0 ? "+" : ""}{formatPnL(net)}
-                </span>
-                <span className="text-xs text-cex-tertiary">{sym}</span>
-              </div>
-            ))}
+            {/* Buy side */}
+            <div className="flex items-center gap-2.5 justify-end">
+              <span className="text-[11px] text-cex-tertiary">{flow.buySymbol}</span>
+              <span className="text-[13px] font-mono text-cex-green font-medium">
+                +{formatPnL(flow.buyAmount)}
+              </span>
+              <TokenIcon symbol={flow.buySymbol} size="sm" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Net position — the bottom line */}
+      {(gains.length > 0 || losses.length > 0) && (
+        <div className="border-t border-cex-border bg-cex-surface px-5 py-3.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-cex-tertiary uppercase tracking-wider font-medium">Net Change</span>
+            <div className="flex items-center gap-3">
+              {gains.map(([sym, net]) => (
+                <div key={`g-${sym}`} className="flex items-center gap-1.5">
+                  <TokenIcon symbol={sym} size="sm" />
+                  <span className="text-[13px] font-mono font-semibold text-cex-green">
+                    +{formatPnL(net)}
+                  </span>
+                  <span className="text-[10px] text-cex-tertiary">{sym}</span>
+                </div>
+              ))}
+              {gains.length > 0 && losses.length > 0 && (
+                <span className="text-cex-border mx-0.5">/</span>
+              )}
+              {losses.map(([sym, net]) => (
+                <div key={`l-${sym}`} className="flex items-center gap-1.5">
+                  <TokenIcon symbol={sym} size="sm" />
+                  <span className="text-[13px] font-mono font-semibold text-cex-red">
+                    {formatPnL(net)}
+                  </span>
+                  <span className="text-[10px] text-cex-tertiary">{sym}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -594,9 +643,10 @@ function BatchPnL({ trades }: { trades: TradeRow[] }) {
 function formatPnL(num: number): string {
   const abs = Math.abs(num);
   if (abs === 0) return "0";
-  if (abs < 0.0001) return abs.toExponential(2);
-  if (abs < 1) return abs.toPrecision(4);
-  if (abs < 1000) return abs.toFixed(2);
-  if (abs < 1_000_000) return abs.toLocaleString(undefined, { maximumFractionDigits: 2 });
+  if (abs < 0.000001) return abs.toExponential(2);
+  if (abs < 0.01) return abs.toPrecision(3);
+  if (abs < 1) return abs.toFixed(4);
+  if (abs < 10000) return abs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (abs < 1_000_000) return abs.toLocaleString(undefined, { maximumFractionDigits: 0 });
   return `${(abs / 1_000_000).toFixed(2)}M`;
 }
