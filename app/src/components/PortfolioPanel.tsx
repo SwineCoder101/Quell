@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, useCallback } from "react";
-import { useDynamicContext, useUserWallets, useEmbeddedWallet } from "@dynamic-labs/sdk-react-core";
+import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
+import { useServerWallet } from "@/hooks/useServerWallet";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
 import TokenIcon from "@/components/TokenIcon";
 
@@ -22,15 +23,8 @@ const CHART_COLORS = [
 
 export default function PortfolioPanel() {
   const { user } = useDynamicContext();
-  const userWallets = useUserWallets();
-  const { userHasEmbeddedWallet } = useEmbeddedWallet();
-
-  const embeddedWallet = userWallets.find(
-    (w) => w.connector?.isEmbeddedWallet
-      || (w.connector as any)?.key?.startsWith("turnkey")
-      || (w.connector as any)?.key?.includes("embedded")
-  );
-  const walletAddress = embeddedWallet?.address as `0x${string}` | undefined;
+  const { serverWalletAddress, loading: walletLoading } = useServerWallet();
+  const walletAddress = serverWalletAddress;
 
   const { balances, loading, lastUpdated, refetch } =
     useTokenBalances({ addressOverride: walletAddress });
@@ -50,8 +44,16 @@ export default function PortfolioPanel() {
         body: JSON.stringify({ recipient: walletAddress }),
       });
       const data = await res.json();
+      console.log("Fund response:", JSON.stringify(data, null, 2));
       if (res.ok) {
-        setFundResult(`Funded! ${data.tokensTransferred} tokens + ${data.ethAmount} ETH sent.`);
+        let msg = `Funded! ${data.tokensTransferred} tokens sent.`;
+        if (data.skipped?.length) {
+          msg += ` Skipped ${data.skipped.length}: ${data.skipped.join(", ")}`;
+        }
+        if (data.failed?.length) {
+          msg += ` Failed ${data.failed.length}: ${data.failed.join(", ")}`;
+        }
+        setFundResult(msg);
         setTimeout(refetch, 8000);
       } else {
         setFundResult(`Error: ${data.error}`);
@@ -71,11 +73,19 @@ export default function PortfolioPanel() {
     );
   }
 
-  if (!embeddedWallet && !userHasEmbeddedWallet()) {
+  if (walletLoading) {
+    return (
+      <div className="text-center text-cex-secondary py-12 animate-pulse">
+        Setting up server wallet...
+      </div>
+    );
+  }
+
+  if (!walletAddress) {
     return (
       <div className="text-center text-cex-secondary py-12 space-y-4">
-        <p>No embedded wallet found.</p>
-        <p className="text-xs text-cex-tertiary">Create an embedded wallet from the Wallet tab to view your portfolio and start trading.</p>
+        <p>No server wallet found.</p>
+        <p className="text-xs text-cex-tertiary">A server wallet will be created automatically when you log in.</p>
       </div>
     );
   }
@@ -89,7 +99,7 @@ export default function PortfolioPanel() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs text-cex-tertiary uppercase tracking-wider">
-            Embedded Wallet
+            Server Wallet
           </p>
           <p className="text-sm font-mono text-cex-secondary">
             {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}

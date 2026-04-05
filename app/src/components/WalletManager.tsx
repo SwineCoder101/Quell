@@ -10,6 +10,7 @@ import { createPublicClient, http, formatUnits, erc20Abi } from "viem";
 import { sepolia } from "viem/chains";
 import { TOKEN_LIST, type TokenConfig } from "@/lib/token-config";
 import TokenIcon from "@/components/TokenIcon";
+import { useServerWallet } from "@/hooks/useServerWallet";
 
 const publicClient = createPublicClient({
   chain: sepolia,
@@ -52,11 +53,14 @@ export default function WalletManager() {
 
   const hasEmbedded = userHasEmbeddedWallet() || !!embeddedWallet;
 
+  // Server wallet
+  const { serverWalletAddress, loading: serverWalletLoading } = useServerWallet();
+
   const fetchBalances = useCallback(async () => {
-    if (!embeddedWallet?.address) return;
+    if (!serverWalletAddress) return;
     setLoadingBalances(true);
     try {
-      const addr = embeddedWallet.address as `0x${string}`;
+      const addr = serverWalletAddress;
       const eth = await publicClient.getBalance({ address: addr });
       setEthBalance(formatUnits(eth, 18));
 
@@ -82,7 +86,7 @@ export default function WalletManager() {
     } finally {
       setLoadingBalances(false);
     }
-  }, [embeddedWallet?.address]);
+  }, [serverWalletAddress]);
 
   useEffect(() => {
     fetchBalances();
@@ -101,7 +105,7 @@ export default function WalletManager() {
   }, [createEmbeddedWallet]);
 
   const handleFund = useCallback(async () => {
-    if (!embeddedWallet?.address) return;
+    if (!serverWalletAddress) return;
     setFundResult(null);
     setError("");
 
@@ -109,11 +113,11 @@ export default function WalletManager() {
       const res = await fetch("/api/fund", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipient: embeddedWallet.address }),
+        body: JSON.stringify({ recipient: serverWalletAddress }),
       });
       const data = await res.json();
       if (res.ok) {
-        setFundResult(`Funded! ${data.tokensTransferred} tokens + ${data.ethAmount} ETH sent.`);
+        setFundResult(`Funded! ${data.tokensTransferred} tokens sent.`);
         setTimeout(fetchBalances, 8000);
       } else {
         setError(data.error || "Funding failed");
@@ -121,7 +125,7 @@ export default function WalletManager() {
     } catch (err: any) {
       setError(err.message || "Funding failed");
     }
-  }, [embeddedWallet?.address, fetchBalances]);
+  }, [serverWalletAddress, fetchBalances]);
 
   // ── Not logged in ──
   if (!user) {
@@ -214,12 +218,19 @@ export default function WalletManager() {
           )}
         </div>
 
-        {/* Embedded wallet balances & actions */}
-        {embeddedWallet && (
+        {/* Server wallet */}
+        {serverWalletLoading && (
+          <div className="text-center text-zinc-500 text-sm py-4 animate-pulse">
+            Creating server wallet...
+          </div>
+        )}
+
+        {/* Server wallet balances & actions */}
+        {serverWalletAddress && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-xs text-zinc-500 uppercase tracking-wider">
-                Embedded Wallet Balances
+                Server Wallet
               </p>
               <div className="flex gap-2">
                 <button
@@ -239,6 +250,9 @@ export default function WalletManager() {
             </div>
 
             <div className="bg-zinc-800 rounded-xl p-3 space-y-2">
+              <p className="text-xs font-mono text-zinc-400 pb-1 border-b border-zinc-700">
+                {serverWalletAddress}
+              </p>
               <div className="flex items-center justify-between py-1">
                 <div className="flex items-center gap-2">
                   <TokenIcon symbol="ETH" size="sm" />

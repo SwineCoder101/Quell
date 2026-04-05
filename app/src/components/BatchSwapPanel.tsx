@@ -2,7 +2,7 @@
 
 import { useState, useCallback, forwardRef, useImperativeHandle, useEffect, useRef } from "react";
 import { useAccount } from "wagmi";
-import { useEmbeddedWalletAddress } from "@/hooks/useEmbeddedWalletAddress";
+import { useServerWallet } from "@/hooks/useServerWallet";
 import { parseUnits, formatUnits } from "viem";
 import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, resolveTokenAddress, type TokenConfig } from "@/lib/token-config";
 import type { TradeSuggestion } from "@/lib/strategy-types";
@@ -60,8 +60,8 @@ export interface BatchSwapPanelHandle {
 
 const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(_props, ref) {
   const { isConnected } = useAccount();
-  const embeddedWalletAddress = useEmbeddedWalletAddress();
-  const address = embeddedWalletAddress;
+  const { serverWalletAddress } = useServerWallet();
+  const address = serverWalletAddress;
 
   const [trades, setTrades] = useState<TradeRow[]>(() => [createTradeRow()]);
   const [batchStep, setBatchStep] = useState<BatchStep>("idle");
@@ -214,7 +214,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
         allCalls.push(...result.calls);
       }
 
-      // Execute server-side via Dynamic embedded wallet
+      // Execute server-side via Dynamic server wallet
       const res = await fetch("/api/execute-batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -235,7 +235,7 @@ const BatchSwapPanel = forwardRef<BatchSwapPanelHandle>(function BatchSwapPanel(
       setBatchStep("done");
 
       toast.success("Batch swap confirmed!", {
-        description: `${data.txHashes.length} transaction(s) executed`,
+        description: `${data.swapCount} swap(s) executed`,
         action: {
           label: "View",
           onClick: () =>

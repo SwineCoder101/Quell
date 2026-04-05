@@ -1,9 +1,23 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 
 export default function DynamicConnectButton() {
   const { primaryWallet, user, handleLogOut, setShowAuthFlow } = useDynamicContext();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2 text-sm text-zinc-500 animate-pulse">
+        &nbsp;
+      </div>
+    );
+  }
 
   if (!user) {
     return (

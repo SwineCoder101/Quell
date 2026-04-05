@@ -10,11 +10,17 @@ declare module "@dynamic-labs-wallet/node-evm" {
       password?: string;
       onError?: (error: Error) => void;
       backUpToClientShareService?: boolean;
-    }): Promise<{ accountAddress: string }>;
+    }): Promise<{
+      accountAddress: string;
+      walletId: string;
+      publicKeyHex: string;
+      externalServerKeyShares: any[];
+    }>;
     signMessage(opts: {
       accountAddress: string;
       message: string;
       password?: string;
+      externalServerKeyShares?: any[];
     }): Promise<string>;
     signTransaction(opts: {
       senderAddress: string;
@@ -25,10 +31,14 @@ declare module "@dynamic-labs-wallet/node-evm" {
     getExternalServerKeyShares(opts: {
       accountAddress: string;
     }): Promise<any[]>;
-    createViemPublicClient(opts: {
-      chain: any;
-      rpcUrl: string;
-    }): any;
+    getWalletClient(opts: {
+      accountAddress: string;
+      password?: string;
+      externalServerKeyShares?: any[];
+      chain?: any;
+      chainId?: number;
+      rpcUrl?: string;
+    }): Promise<any>;
   }
 }
 
