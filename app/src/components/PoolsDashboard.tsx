@@ -41,7 +41,6 @@ export default function PoolsDashboard() {
     setLoading(true);
 
     try {
-      // Fetch V3 pool data (liquidity + token balances)
       const v3Data: PoolData[] = await Promise.all(
         V3_POOLS.map(async (pool) => {
           if (!pool.poolAddress) return { ...pool };
@@ -77,7 +76,6 @@ export default function PoolsDashboard() {
         })
       );
 
-      // Fetch V4 pool manager token balances (shared across all V4 pools)
       const v4TokenAddrs = new Map<string, { symbol: string; decimals: number }>();
       for (const pool of V4_POOLS) {
         v4TokenAddrs.set(pool.token0.address.toLowerCase(), {
@@ -126,7 +124,6 @@ export default function PoolsDashboard() {
     fetchPoolData();
   }, [fetchPoolData]);
 
-  // Filter and sort
   const filtered = pools
     .filter((p) => versionFilter === "all" || p.version === versionFilter)
     .filter(
@@ -159,7 +156,7 @@ export default function PoolsDashboard() {
 
   return (
     <div className="space-y-4">
-      {/* Stats */}
+      {/* Stats row */}
       <div className="grid grid-cols-3 gap-3">
         <StatCard label="Total Pools" value={ALL_POOLS.length} />
         <StatCard label="V3 / V4" value={`${v3Count} / ${v4Count}`} />
@@ -171,19 +168,19 @@ export default function PoolsDashboard() {
         <input
           type="text"
           placeholder="Search pairs..."
-          className="flex-1 bg-zinc-800 text-white text-sm rounded-lg px-3 py-2 border border-zinc-700 outline-none focus:border-violet-500"
+          className="flex-1 bg-cex-surface text-foreground text-sm rounded px-3 py-2 border border-cex-border outline-none focus:border-cex-gold transition"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <div className="flex gap-1 bg-zinc-800 rounded-lg p-0.5">
+        <div className="flex gap-px bg-cex-border rounded overflow-hidden">
           {(["all", "v3", "v4"] as VersionFilter[]).map((v) => (
             <button
               key={v}
               onClick={() => setVersionFilter(v)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-md transition ${
+              className={`px-3 py-1.5 text-xs font-medium transition ${
                 versionFilter === v
-                  ? "bg-zinc-700 text-white"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-cex-gold/15 text-cex-gold"
+                  : "bg-cex-surface text-cex-secondary hover:text-foreground"
               }`}
             >
               {v === "all" ? "All" : v.toUpperCase()}
@@ -193,42 +190,45 @@ export default function PoolsDashboard() {
         <button
           onClick={fetchPoolData}
           disabled={loading}
-          className="text-xs text-zinc-400 hover:text-white border border-zinc-700 hover:border-zinc-500 rounded-lg px-3 py-1.5 transition disabled:opacity-50"
+          className="text-xs text-cex-secondary hover:text-foreground border border-cex-border hover:border-cex-secondary rounded px-3 py-1.5 transition disabled:opacity-50"
         >
           {loading ? "Loading..." : "Refresh"}
         </button>
       </div>
 
-      {/* Sort headers */}
-      <div className="hidden sm:grid grid-cols-[1fr_60px_70px_50px_1fr_1fr] gap-2 px-3 text-[10px] text-zinc-500 uppercase tracking-wider">
-        <SortHeader label="Pair" sortKey="pair" current={sortKey} onSort={setSortKey} />
-        <SortHeader label="Version" sortKey="version" current={sortKey} onSort={setSortKey} />
-        <SortHeader label="Fee" sortKey="fee" current={sortKey} onSort={setSortKey} />
-        <span>RFQ</span>
-        <span>Token 0 Balance</span>
-        <span>Token 1 Balance</span>
+      {/* Table */}
+      <div className="border border-cex-border rounded overflow-hidden">
+        {/* Table header */}
+        <div className="hidden sm:grid grid-cols-[1fr_60px_70px_50px_1fr_1fr] gap-2 px-3 py-2 text-[10px] text-cex-tertiary uppercase tracking-wider bg-cex-surface border-b border-cex-border">
+          <SortHeader label="Pair" sortKey="pair" current={sortKey} onSort={setSortKey} />
+          <SortHeader label="Version" sortKey="version" current={sortKey} onSort={setSortKey} />
+          <SortHeader label="Fee" sortKey="fee" current={sortKey} onSort={setSortKey} />
+          <span>RFQ</span>
+          <span>Token 0 Balance</span>
+          <span>Token 1 Balance</span>
+        </div>
+
+        {/* Pool rows */}
+        {loading && pools.length === 0 ? (
+          <div>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="bg-cex-surface p-4 animate-pulse h-14 border-b border-cex-border/50" />
+            ))}
+          </div>
+        ) : (
+          <div className="divide-y divide-cex-border/50">
+            {filtered.map((pool, i) => (
+              <PoolRow key={`${pool.version}-${pool.pair}-${pool.fee}-${i}`} pool={pool} />
+            ))}
+            {filtered.length === 0 && (
+              <p className="text-center text-cex-secondary text-sm py-8">No pools found</p>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Pool list */}
-      {loading && pools.length === 0 ? (
-        <div className="space-y-2">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-zinc-800 rounded-xl p-4 animate-pulse h-16" />
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-1.5">
-          {filtered.map((pool, i) => (
-            <PoolRow key={`${pool.version}-${pool.pair}-${pool.fee}-${i}`} pool={pool} />
-          ))}
-          {filtered.length === 0 && (
-            <p className="text-center text-zinc-500 text-sm py-8">No pools found</p>
-          )}
-        </div>
-      )}
-
       {lastUpdated && (
-        <p className="text-center text-xs text-zinc-600">
+        <p className="text-xs text-cex-tertiary">
           Updated {lastUpdated.toLocaleTimeString()}
         </p>
       )}
@@ -245,47 +245,47 @@ function PoolRow({ pool }: { pool: PoolData }) {
 
   return (
     <div
-      className={`grid grid-cols-1 sm:grid-cols-[1fr_60px_70px_50px_1fr_1fr] gap-2 items-center bg-zinc-800 rounded-xl p-3 transition hover:bg-zinc-750 ${
+      className={`grid grid-cols-1 sm:grid-cols-[1fr_60px_70px_50px_1fr_1fr] gap-2 items-center px-3 py-2.5 transition hover:bg-cex-surface-hover ${
         !hasFunds ? "opacity-50" : ""
       }`}
     >
-      {/* Pair with icons */}
+      {/* Pair */}
       <div className="flex items-center gap-2">
-        <div className="flex -space-x-2">
-          <TokenIcon symbol={pool.token0.symbol} size="md" className="ring-2 ring-zinc-800" />
-          <TokenIcon symbol={pool.token1.symbol} size="md" className="ring-2 ring-zinc-800" />
+        <div className="flex -space-x-1.5">
+          <TokenIcon symbol={pool.token0.symbol} size="sm" className="ring-1 ring-background" />
+          <TokenIcon symbol={pool.token1.symbol} size="sm" className="ring-1 ring-background" />
         </div>
         <div>
-          <p className="text-sm font-semibold text-white">{pool.pair}</p>
+          <p className="text-sm font-medium text-foreground">{pool.pair}</p>
           {pool.poolAddress ? (
             <a
               href={`https://sepolia.etherscan.io/address/${pool.poolAddress}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-zinc-600 hover:text-violet-400 transition"
+              className="text-[10px] text-cex-tertiary hover:text-cex-gold transition"
             >
-              {pool.poolAddress.slice(0, 8)}...{pool.poolAddress.slice(-4)} ↗
+              {pool.poolAddress.slice(0, 8)}...{pool.poolAddress.slice(-4)}
             </a>
           ) : pool.version === "v4" ? (
             <a
               href={`https://sepolia.etherscan.io/address/${V4_POOL_MANAGER_ADDRESS}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[10px] text-zinc-600 hover:text-violet-400 transition"
+              className="text-[10px] text-cex-tertiary hover:text-cex-gold transition"
             >
-              PoolManager ↗
+              PoolManager
             </a>
           ) : null}
         </div>
       </div>
 
-      {/* Version badge */}
+      {/* Version */}
       <div>
         <span
-          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+          className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
             pool.version === "v3"
-              ? "bg-pink-500/15 text-pink-400"
-              : "bg-violet-500/15 text-violet-400"
+              ? "bg-cex-gold/10 text-cex-gold"
+              : "bg-cyan-500/10 text-cyan-400"
           }`}
         >
           {pool.version.toUpperCase()}
@@ -293,16 +293,16 @@ function PoolRow({ pool }: { pool: PoolData }) {
       </div>
 
       {/* Fee */}
-      <span className="text-xs text-zinc-400 font-mono">{feePercent}</span>
+      <span className="text-xs text-cex-secondary font-mono">{feePercent}</span>
 
-      {/* RFQ status */}
+      {/* RFQ */}
       <div>
         {isPairQuotable(pool.token0.symbol, pool.token1.symbol) ? (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-400">
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cex-green/10 text-cex-green">
             Live
           </span>
         ) : (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400" title="V4-only pair — RFQ not available via Uniswap Trading API">
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-cex-red/10 text-cex-red" title="V4-only pair — RFQ not available">
             N/A
           </span>
         )}
@@ -312,16 +312,16 @@ function PoolRow({ pool }: { pool: PoolData }) {
       <div className="flex items-center gap-1.5">
         <TokenIcon symbol={pool.token0.symbol} size="sm" />
         <div>
-          <p className="text-xs text-white font-mono">
+          <p className="text-xs text-foreground font-mono">
             {pool.balance0 ? formatBalance(pool.balance0) : "—"}
           </p>
           <a
             href={`https://sepolia.etherscan.io/token/${pool.token0.address}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] text-zinc-500 hover:text-violet-400 transition"
+            className="text-[10px] text-cex-tertiary hover:text-cex-gold transition"
           >
-            {pool.token0.symbol} ↗
+            {pool.token0.symbol}
           </a>
         </div>
       </div>
@@ -330,16 +330,16 @@ function PoolRow({ pool }: { pool: PoolData }) {
       <div className="flex items-center gap-1.5">
         <TokenIcon symbol={pool.token1.symbol} size="sm" />
         <div>
-          <p className="text-xs text-white font-mono">
+          <p className="text-xs text-foreground font-mono">
             {pool.balance1 ? formatBalance(pool.balance1) : "—"}
           </p>
           <a
             href={`https://sepolia.etherscan.io/token/${pool.token1.address}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] text-zinc-500 hover:text-violet-400 transition"
+            className="text-[10px] text-cex-tertiary hover:text-cex-gold transition"
           >
-            {pool.token1.symbol} ↗
+            {pool.token1.symbol}
           </a>
         </div>
       </div>
@@ -357,10 +357,10 @@ function StatCard({
   accent?: boolean;
 }) {
   return (
-    <div className="bg-zinc-800 rounded-xl p-3 text-center">
-      <p className="text-[10px] text-zinc-500 uppercase tracking-wider">{label}</p>
+    <div className="bg-cex-surface border border-cex-border rounded p-3">
+      <p className="text-[10px] text-cex-tertiary uppercase tracking-wider">{label}</p>
       <p
-        className={`text-lg font-bold ${accent ? "text-green-400" : "text-white"}`}
+        className={`text-lg font-bold ${accent ? "text-cex-green" : "text-foreground"}`}
       >
         {value}
       </p>
@@ -383,7 +383,7 @@ function SortHeader({
     <button
       onClick={() => onSort(sortKey)}
       className={`text-left transition ${
-        current === sortKey ? "text-violet-400" : "hover:text-zinc-300"
+        current === sortKey ? "text-cex-gold" : "hover:text-cex-secondary"
       }`}
     >
       {label} {current === sortKey && "↓"}

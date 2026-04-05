@@ -3,9 +3,10 @@
 import { useState, useCallback } from "react";
 import { useAccount, useWalletClient, usePublicClient } from "wagmi";
 import { parseUnits, formatUnits } from "viem";
-import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, type TokenConfig } from "@/lib/token-config";
+import { TOKEN_LIST, isPairQuotable, isTokenQuotable, getQuotableCounterparts, resolveTokenAddress, type TokenConfig } from "@/lib/token-config";
 import { checkApproval, getQuote, getSwap, getOutputAmount } from "@/lib/uniswap-api";
 import TokenIcon from "@/components/TokenIcon";
+import SettleButton from "@/components/SettleButton";
 
 const SEPOLIA_CHAIN_ID = "11155111";
 
@@ -53,8 +54,8 @@ export default function SwapPanel() {
 
       const quote = await getQuote({
         swapper: address,
-        tokenIn: tokenIn.address,
-        tokenOut: tokenOut.address,
+        tokenIn: resolveTokenAddress(tokenIn, tokenOut.symbol),
+        tokenOut: resolveTokenAddress(tokenOut, tokenIn.symbol),
         tokenInChainId: SEPOLIA_CHAIN_ID,
         tokenOutChainId: SEPOLIA_CHAIN_ID,
         amount: rawAmount,
@@ -81,7 +82,7 @@ export default function SwapPanel() {
         setStep("approving");
         const approvalRes = await checkApproval({
           walletAddress: address,
-          token: tokenIn.address,
+          token: resolveTokenAddress(tokenIn, tokenOut.symbol),
           amount: parseUnits(amountIn, tokenIn.decimals).toString(),
           chainId: 11155111,
         });
@@ -112,7 +113,8 @@ export default function SwapPanel() {
       }
 
       setStep("swapping");
-      const swapRes = await getSwap(quoteResponse, signature);
+      const quote = quoteResponse.quote as Record<string, unknown>;
+      const swapRes = await getSwap(quote, permitData, signature);
 
       if (!swapRes.swap?.data || swapRes.swap.data === "0x") {
         throw new Error("Swap data is empty — quote may have expired. Please re-quote.");
@@ -143,18 +145,18 @@ export default function SwapPanel() {
 
   if (!isConnected) {
     return (
-      <div className="text-center text-zinc-400 py-12">
+      <div className="text-center text-cex-secondary py-12">
         Connect your wallet to start swapping
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="bg-cex-surface border border-cex-border rounded p-6 space-y-4">
       {/* Token In */}
-      <div className="bg-zinc-800 rounded-xl p-4">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-zinc-400">You pay</span>
+      <div className="bg-background border border-cex-border rounded-lg p-5">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-xs text-cex-tertiary uppercase tracking-wider">You pay</span>
           <TokenSelector
             tokens={TOKEN_OPTIONS}
             selected={tokenIn}
@@ -166,7 +168,7 @@ export default function SwapPanel() {
         <input
           type="text"
           placeholder="0.0"
-          className="w-full bg-transparent text-2xl text-white outline-none"
+          className="w-full bg-transparent text-3xl text-foreground outline-none font-mono"
           value={amountIn}
           onChange={(e) => {
             setAmountIn(e.target.value);
@@ -175,22 +177,22 @@ export default function SwapPanel() {
         />
       </div>
 
-      {/* Swap direction button */}
+      {/* Swap direction */}
       <div className="flex justify-center -my-2 relative z-10">
         <button
           onClick={swapTokens}
-          className="bg-zinc-700 hover:bg-zinc-600 border-4 border-zinc-900 rounded-xl p-2 transition"
+          className="bg-cex-surface-hover hover:bg-cex-border border border-cex-border rounded-lg p-2 transition"
         >
-          <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 text-cex-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
           </svg>
         </button>
       </div>
 
       {/* Token Out */}
-      <div className="bg-zinc-800 rounded-xl p-4">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-zinc-400">You receive</span>
+      <div className="bg-background border border-cex-border rounded-lg p-5">
+        <div className="flex justify-between items-center mb-3">
+          <span className="text-xs text-cex-tertiary uppercase tracking-wider">You receive</span>
           <TokenSelector
             tokens={TOKEN_OPTIONS}
             selected={tokenOut}
@@ -199,28 +201,28 @@ export default function SwapPanel() {
             onChange={(t) => { setTokenOut(t); resetState(); }}
           />
         </div>
-        <div className="text-2xl text-white">
+        <div className="text-3xl text-foreground font-mono">
           {step === "quoting" ? (
-            <span className="text-zinc-500 animate-pulse">Getting quote...</span>
+            <span className="text-cex-tertiary animate-pulse">Getting quote...</span>
           ) : outputAmount ? (
             outputAmount
           ) : (
-            <span className="text-zinc-600">0.0</span>
+            <span className="text-cex-tertiary">0.0</span>
           )}
         </div>
       </div>
 
       {/* Quote details */}
       {quoteResponse && step === "quoted" && (
-        <div className="bg-zinc-800/50 rounded-xl p-3 text-sm text-zinc-400 space-y-1">
+        <div className="bg-background border border-cex-border rounded-lg p-4 text-sm text-cex-secondary space-y-2">
           <div className="flex justify-between">
             <span>Routing</span>
-            <span className="text-white">{quoteResponse.routing as string}</span>
+            <span className="text-foreground">{quoteResponse.routing as string}</span>
           </div>
           {quoteResponse.routing === "CLASSIC" && (
             <div className="flex justify-between">
               <span>Gas estimate</span>
-              <span className="text-white">
+              <span className="text-foreground">
                 {(quoteResponse.quote as Record<string, unknown>).gasFeeUSD
                   ? `$${(quoteResponse.quote as Record<string, unknown>).gasFeeUSD}`
                   : "N/A"}
@@ -229,18 +231,18 @@ export default function SwapPanel() {
           )}
           <div className="flex justify-between">
             <span>Slippage</span>
-            <span className="text-white">0.5%</span>
+            <span className="text-foreground">0.5%</span>
           </div>
         </div>
       )}
 
       {/* Pair quotability warning */}
       {!isPairQuotable(tokenIn.symbol, tokenOut.symbol) && (
-        <div className="bg-amber-900/20 border border-amber-800/50 rounded-xl p-3 flex items-start gap-2">
-          <span className="text-amber-400 text-sm mt-0.5">!</span>
+        <div className="bg-cex-red/5 border border-cex-red/20 rounded p-3 flex items-start gap-2">
+          <span className="text-cex-red text-sm mt-0.5">!</span>
           <div>
-            <p className="text-amber-400 text-sm font-medium">RFQ unavailable for {tokenIn.symbol}/{tokenOut.symbol}</p>
-            <p className="text-amber-400/60 text-xs mt-0.5">This pair only has V4 liquidity. The Uniswap Trading API does not yet support V4 pool routing.</p>
+            <p className="text-cex-red text-sm font-medium">RFQ unavailable for {tokenIn.symbol}/{tokenOut.symbol}</p>
+            <p className="text-cex-red/60 text-xs mt-0.5">This pair only has V4 liquidity. The Uniswap Trading API does not yet support V4 pool routing.</p>
           </div>
         </div>
       )}
@@ -250,39 +252,39 @@ export default function SwapPanel() {
         <button
           onClick={handleQuote}
           disabled={!amountIn || parseFloat(amountIn) <= 0 || !isPairQuotable(tokenIn.symbol, tokenOut.symbol)}
-          className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white font-semibold py-4 rounded-xl transition text-lg"
+          className="w-full bg-cex-gold hover:bg-cex-gold/90 disabled:bg-cex-surface disabled:text-cex-tertiary disabled:border disabled:border-cex-border text-[#0b0e11] font-semibold py-4 rounded-lg transition text-base"
         >
           Request Quote (RFQ)
         </button>
       ) : step === "quoted" ? (
         <button
           onClick={handleSwap}
-          className="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-4 rounded-xl transition text-lg"
+          className="w-full bg-cex-gold hover:bg-cex-gold/90 text-[#0b0e11] font-semibold py-4 rounded-lg transition text-base"
         >
           Swap
         </button>
       ) : step === "done" ? (
         <div className="text-center space-y-2">
-          <div className="text-green-400 font-semibold">Swap successful!</div>
+          <div className="text-cex-green font-semibold">Swap successful!</div>
           {txHash && (
             <a
               href={`https://sepolia.etherscan.io/tx/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-violet-400 hover:underline text-sm"
+              className="text-cex-gold hover:underline text-sm"
             >
               View on Etherscan
             </a>
           )}
           <button
             onClick={resetState}
-            className="block mx-auto mt-2 text-sm text-zinc-400 hover:text-white"
+            className="block mx-auto mt-2 text-sm text-cex-secondary hover:text-foreground"
           >
             New swap
           </button>
         </div>
       ) : (
-        <button disabled className="w-full bg-zinc-700 text-zinc-400 font-semibold py-4 rounded-xl text-lg">
+        <button disabled className="w-full bg-cex-surface border border-cex-border text-cex-secondary font-semibold py-4 rounded-lg text-base">
           {step === "quoting" && "Requesting quote..."}
           {step === "approving" && "Approving token..."}
           {step === "signing" && "Sign permit in wallet..."}
@@ -290,12 +292,15 @@ export default function SwapPanel() {
         </button>
       )}
 
-      {/* Error display */}
+      {/* Error */}
       {error && (
-        <div className="bg-red-900/30 border border-red-800 rounded-xl p-3 text-red-400 text-sm">
+        <div className="bg-cex-red/10 border border-cex-red/30 rounded p-3 text-cex-red text-sm">
           {error}
         </div>
       )}
+
+      {/* Settle */}
+      <SettleButton />
     </div>
   );
 }
@@ -329,11 +334,11 @@ function TokenSelector({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg px-3 py-1.5 text-sm border border-zinc-600 transition"
+        className="flex items-center gap-2 bg-cex-surface-hover hover:bg-cex-border text-foreground rounded px-3 py-1.5 text-sm border border-cex-border transition"
       >
         <TokenIcon symbol={selected.symbol} size="sm" />
         <span className="font-medium">{selected.symbol}</span>
-        <svg className="w-3 h-3 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-3 h-3 text-cex-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
@@ -341,12 +346,12 @@ function TokenSelector({
       {open && (
         <>
           <div className="fixed inset-0 z-20" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-64 bg-zinc-800 border border-zinc-700 rounded-xl shadow-2xl z-30 overflow-hidden">
+          <div className="absolute right-0 top-full mt-1 w-64 bg-cex-surface border border-cex-border rounded shadow-2xl z-30 overflow-hidden">
             <div className="p-2">
               <input
                 type="text"
                 placeholder="Search tokens..."
-                className="w-full bg-zinc-700 text-white text-sm rounded-lg px-3 py-2 outline-none border border-zinc-600 focus:border-violet-500"
+                className="w-full bg-cex-surface-hover text-foreground text-sm rounded px-3 py-2 outline-none border border-cex-border focus:border-cex-gold transition"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 autoFocus
@@ -356,8 +361,8 @@ function TokenSelector({
               {filtered.map((t) => (
                 <div
                   key={t.symbol}
-                  className={`flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-700 transition ${
-                    t.symbol === selected.symbol ? "bg-zinc-700/50" : ""
+                  className={`flex items-center gap-3 px-3 py-2 hover:bg-cex-surface-hover transition ${
+                    t.symbol === selected.symbol ? "bg-cex-gold/5" : ""
                   }`}
                 >
                   <button
@@ -368,10 +373,10 @@ function TokenSelector({
                     }}
                     className="flex items-center gap-3 flex-1 text-left"
                   >
-                    <TokenIcon symbol={t.symbol} size="md" />
+                    <TokenIcon symbol={t.symbol} size="sm" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white">{t.symbol}</p>
-                      <p className="text-xs text-zinc-500 truncate">{t.name}</p>
+                      <p className="text-sm font-medium text-foreground">{t.symbol}</p>
+                      <p className="text-xs text-cex-tertiary truncate">{t.name}</p>
                     </div>
                   </button>
                   {t.address !== "0x0000000000000000000000000000000000000000" && (
@@ -380,8 +385,7 @@ function TokenSelector({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="text-[10px] text-zinc-600 hover:text-violet-400 transition shrink-0"
-                      title="View on BaseScan"
+                      className="text-[10px] text-cex-tertiary hover:text-cex-gold transition shrink-0"
                     >
                       ↗
                     </a>
@@ -389,7 +393,7 @@ function TokenSelector({
                 </div>
               ))}
               {filtered.length === 0 && (
-                <p className="text-center text-zinc-500 text-sm py-4">No tokens found</p>
+                <p className="text-center text-cex-secondary text-sm py-4">No tokens found</p>
               )}
             </div>
           </div>

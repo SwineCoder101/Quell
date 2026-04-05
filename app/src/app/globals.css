@@ -1,13 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b;
-  --foreground: #fafafa;
+  --background: #0b0e11;
+  --foreground: #eaecef;
+  --cex-gold: #f0b90b;
+  --cex-gold-dim: #f0b90b33;
+  --cex-surface: #1e2329;
+  --cex-surface-hover: #2b3139;
+  --cex-border: #2b3139;
+  --cex-text-secondary: #848e9c;
+  --cex-text-tertiary: #5e6673;
+  --cex-green: #0ecb81;
+  --cex-red: #f6465d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-cex-gold: var(--cex-gold);
+  --color-cex-gold-dim: var(--cex-gold-dim);
+  --color-cex-surface: var(--cex-surface);
+  --color-cex-surface-hover: var(--cex-surface-hover);
+  --color-cex-border: var(--cex-border);
+  --color-cex-secondary: var(--cex-text-secondary);
+  --color-cex-tertiary: var(--cex-text-tertiary);
+  --color-cex-green: var(--cex-green);
+  --color-cex-red: var(--cex-red);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,4 +34,28 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Scrollbar styling for CEX feel */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--cex-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cex-text-tertiary);
+}
+
+/* Select dropdown styling */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23848e9c' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
 }

@@ -7,6 +7,7 @@ import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector";
 import { config } from "@/lib/wagmi";
 import { useState } from "react";
+import { Toaster } from "sonner";
 
 const DYNAMIC_ENV_ID = process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID || "PLACEHOLDER";
 
@@ -39,6 +40,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <DynamicWagmiConnector>
             {children}
+            <Toaster theme="dark" position="bottom-right" richColors />
           </DynamicWagmiConnector>
         </QueryClientProvider>
       </WagmiProvider>

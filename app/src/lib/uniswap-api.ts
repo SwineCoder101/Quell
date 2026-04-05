@@ -49,24 +49,22 @@ export async function getQuote(params: QuoteParams) {
   return res.json();
 }
 
-export async function getSwap(quoteResponse: Record<string, unknown>, signature?: string) {
-  // Strip null permitData fields, spread quote response into body
-  const { permitData, permitTransaction, ...cleanQuote } = quoteResponse;
-  const body: Record<string, unknown> = { ...cleanQuote };
+/**
+ * POST /swap — takes { quote, signature?, permitData? } as separate top-level fields.
+ * signature and permitData must both be present or both absent.
+ */
+export async function getSwap(
+  quote: Record<string, unknown>,
+  permitData: Record<string, unknown> | null,
+  signature?: string,
+) {
+  const body: Record<string, unknown> = { quote };
 
-  const isUniswapX =
-    quoteResponse.routing === "DUTCH_V2" ||
-    quoteResponse.routing === "DUTCH_V3" ||
-    quoteResponse.routing === "PRIORITY";
-
-  if (isUniswapX) {
-    if (signature) body.signature = signature;
-  } else {
-    if (signature && permitData && typeof permitData === "object") {
-      body.signature = signature;
-      body.permitData = permitData;
-    }
+  if (signature && permitData) {
+    body.signature = signature;
+    body.permitData = permitData;
   }
+  // If no permitData, omit both signature and permitData entirely
 
   const res = await fetch("/api/uniswap/swap", {
     method: "POST",
@@ -80,13 +78,10 @@ export async function getSwap(quoteResponse: Record<string, unknown>, signature?
   return res.json();
 }
 
-export interface BatchSwapParams {
-  quote: Record<string, unknown>;
-  permitData?: Record<string, unknown>;
-  deadline?: number;
-  urgency?: "normal" | "fast" | "urgent";
-}
-
+/**
+ * POST /swap_5792 — takes { quote, permitData?, deadline?, urgency? }.
+ * No signature field — EIP-5792 batches approval + swap into calls the wallet executes together.
+ */
 export interface BatchSwapCall {
   to: string;
   data: string;
@@ -101,11 +96,22 @@ export interface BatchSwapResponse {
   gasFee?: string;
 }
 
-export async function getBatchSwap(params: BatchSwapParams): Promise<BatchSwapResponse> {
+export async function getBatchSwap(
+  quote: Record<string, unknown>,
+  permitData?: Record<string, unknown> | null,
+  urgency: "normal" | "fast" | "urgent" = "urgent",
+): Promise<BatchSwapResponse> {
+  const body: Record<string, unknown> = { quote, urgency };
+
+  // Only include permitData if it's a non-null object
+  if (permitData && typeof permitData === "object") {
+    body.permitData = permitData;
+  }
+
   const res = await fetch("/api/uniswap/swap_5792", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(params),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json();

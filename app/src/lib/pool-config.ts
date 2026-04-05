@@ -181,6 +181,7 @@ export const V3_POOLS: PoolConfig[] = [
     fee: 10000,
     tickSpacing: 200,
     hooks: "0x0000000000000000000000000000000000000000" as `0x${string}`,
+    poolAddress: "0x0eAc7bb1F0e613A16863093Edb8Be89C9a95E97D" as `0x${string}`,
   },
 ];
 
